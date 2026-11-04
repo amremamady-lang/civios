@@ -15,7 +15,8 @@ import { maakDatabase } from '../src/opslag/database.js';
 import { maakApp } from '../src/web/app.js';
 import { stopOcr } from '../src/classificatie/ocr.js';
 import { MODELBESTAND } from '../src/classificatie/ner.js';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, unlinkSync } from 'node:fs';
+import { join } from 'node:path';
 
 /** Tests die het echte taalmodel nodig hebben, slaan zichzelf over zolang `npm run model` niet gedraaid is. */
 const metModel = it.skipIf(!existsSync(MODELBESTAND));
@@ -211,11 +212,35 @@ describe('contract en betekenis', () => {
     const { documentId } = await aangeboden.json();
     const document = await (await haal(`/api/documenten/${documentId}`, 'dossierbeheerder')).json();
     expect(document['@context']).toBe('/api/context.jsonld');
-    // Elk veld van het document heeft een betekenis in de context, behalve de interne velden.
+    // Elk veld van het document heeft een betekenis in de context.
     for (const veld of Object.keys(document)) {
-      if (['@context', 'zekerheid', 'status', 'toegang'].includes(veld)) continue;
+      if (veld === '@context') continue;
       expect(c, `veld ${veld} ontbreekt in de context`).toHaveProperty(veld);
     }
+  });
+});
+
+describe('grenzen en storingen op het bestand', () => {
+  it('weigert een bestand groter dan 10 MB met 413, afgekapt tijdens het uploaden', async () => {
+    const antwoord = await stuur('medewerker', 'x'.repeat(10 * 1024 * 1024 + 1));
+    expect(antwoord.status).toBe(413);
+    expect((await antwoord.json()).fout).toBe('bestand_te_groot');
+  });
+
+  it('geeft 500 zonder technische details als het bestand op schijf ontbreekt', async () => {
+    const { documentId } = await (await stuur('medewerker', 'Nota met jan.peeters@voorbeeld.be erin.')).json();
+    // Nabootsing van een storing in de opslag: het bestand verdwijnt van de schijf.
+    const pad = readdirSync(OPSLAG, { recursive: true })
+      .map(String)
+      .find((p) => p.includes(documentId));
+    expect(pad).toBeDefined();
+    unlinkSync(join(OPSLAG, pad as string));
+
+    const antwoord = await haal(`/api/documenten/${documentId}/bestand`, 'dossierbeheerder');
+    expect(antwoord.status).toBe(500);
+    const data = await antwoord.json();
+    expect(data.fout).toBe('bestand_niet_beschikbaar');
+    expect(JSON.stringify(data)).not.toContain('opslag-test-api');
   });
 });
 

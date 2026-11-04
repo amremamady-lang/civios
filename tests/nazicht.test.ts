@@ -93,6 +93,27 @@ describe('nazicht afhandelen', () => {
     expect(laatste.motivering).toContain('interne nota');
   });
 
+  it('zet het bestand terug als de registratie van de beslissing mislukt', async () => {
+    const id = await inNazicht();
+    const voor = new Documentenregister(db).haal(id)!;
+    // Nabootsing van een databankstoring midden in de afhandeling.
+    db.exec("CREATE TRIGGER storing BEFORE UPDATE ON documenten BEGIN SELECT RAISE(ABORT, 'databank weigert'); END");
+
+    expect(() =>
+      handelNazichtAf(
+        db,
+        { documentId: id, beslissing: 'herclassificeren', classificatie: 'intern', motivering: 'Scan bekeken, interne nota.', ...beheerder },
+        OPSLAG,
+      ),
+    ).toThrow();
+
+    const na = new Documentenregister(db).haal(id)!;
+    expect(na.status).toBe('in_nazicht');
+    expect(na.opslagpad).toBe(voor.opslagpad);
+    expect(existsSync(voor.opslagpad)).toBe(true); // het bestand staat weer op zijn oude plaats
+    expect(existsSync(voor.opslagpad.replace('gevoelig', 'intern'))).toBe(false);
+  });
+
   it('weigert zonder voldoende motivering', async () => {
     const id = await inNazicht();
     const r = handelNazichtAf(db, { documentId: id, beslissing: 'bevestigen', motivering: 'ok', ...beheerder }, OPSLAG);

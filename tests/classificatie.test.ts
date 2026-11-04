@@ -12,6 +12,7 @@ import {
   zoekAlleSignalen,
 } from '../src/classificatie/signalen.js';
 import { leesTekst, MINIMALE_OCR_BETROUWBAARHEID } from '../src/classificatie/tekstextractie.js';
+import { metTijdslimiet } from '../src/classificatie/ocr.js';
 import type { Documentmetadata, Signaal } from '../src/domein/types.js';
 
 const intern: Documentmetadata = {
@@ -235,6 +236,12 @@ describe('tekstextractie', () => {
   it('gooit onbetrouwbaar herkende tekst weg', async () => {
     const ocr = async () => ({ tekst: 'Mcd1sch vcrsl@g', betrouwbaarheid: MINIMALE_OCR_BETROUWBAARHEID - 1 });
     expect((await leesTekst(scan, 'image/png', ocr)).tekst).toBe('');
+  });
+
+  it('geeft op als de tekstherkenning blijft hangen', async () => {
+    const hangt = new Promise<never>(() => {});
+    await expect(metTijdslimiet(hangt, 20)).rejects.toThrow('langer dan 20 ms');
+    await expect(metTijdslimiet(Promise.resolve('klaar'), 20)).resolves.toBe('klaar');
   });
 
   it('valt veilig terug als de tekstherkenning faalt, zonder de verwerking te stoppen', async () => {

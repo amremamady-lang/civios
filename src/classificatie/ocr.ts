@@ -55,7 +55,8 @@ function haalWerker(): Promise<Worker> {
   return werker;
 }
 
-function metTijdslimiet<T>(belofte: Promise<T>, ms: number): Promise<T> {
+/** Geeft op als de belofte niet binnen `ms` milliseconden afgerond is. */
+export function metTijdslimiet<T>(belofte: Promise<T>, ms: number): Promise<T> {
   let klok: NodeJS.Timeout;
   const limiet = new Promise<never>((_, weiger) => {
     klok = setTimeout(() => weiger(new Error(`Tekstherkenning duurde langer dan ${ms} ms.`)), ms);

@@ -21,7 +21,7 @@ De in te leveren onderdelen (opdracht, punt 8) en waar ze te vinden zijn.
 | Broncode en configuratiebestanden | `src/`, `public/`, `scripts/`, `package.json`, `tsconfig.json`, `.npmrc` (zie *Projectstructuur*) |
 | API-contracten | *API* hieronder (leesbaar) en [`openapi.yaml`](openapi.yaml) (machineleesbaar); de betekenis van de velden in `/api/context.jsonld` |
 | README met installatie-, start- en testinstructies | hieronder: *Installeren*, *Starten*, *Testen* |
-| Geautomatiseerde tests voor de belangrijkste onderdelen | `tests/`, 127 tests; overzicht per bestand onder *Testen* |
+| Geautomatiseerde tests voor de belangrijkste onderdelen | `tests/`, 131 tests; overzicht per bestand onder *Testen* |
 | De zeven technische vragen (opdracht, punt 7) | [TECHNISCHE-VRAGEN.md](TECHNISCHE-VRAGEN.md) |
 | Hoe met onduidelijkheid in de opdracht is omgegaan | ARCHITECTUUR.md §12 |
 | Gekozen traject en bestede tijd (opdracht, punt 9) | de tabel bovenaan |
@@ -65,7 +65,7 @@ aanmelding en autorisatie. Elk onderdeel heeft één taak en is los te vervangen
 *fail-closed* (bij twijfel dicht), *least privilege* (zo weinig rechten als
 nodig).
 
-**Status.** Werkend prototype met 127 geautomatiseerde tests, uitsluitend met
+**Status.** Werkend prototype met 131 geautomatiseerde tests, uitsluitend met
 fictieve gegevens.
 
 ---
@@ -122,9 +122,9 @@ schrijft, schrijft in één transactie: faalt de registratie, dan verdwijnt ook
 het bestand weer. En bij elke storing in de classificatie, de tekstherkenning
 of de naamherkenning gaat de deur dicht: een voorzichtige categorie en
 nazicht, nooit publiek. Alle scenario's staan in de tabel in ARCHITECTUUR.md
-§6, en de belangrijkste hebben een test.
+§6, en elk heeft een test.
 
-**Testaanpak.** 127 geautomatiseerde tests (`npm test`) in drie lagen:
+**Testaanpak.** 131 geautomatiseerde tests (`npm test`) in drie lagen:
 eenheidstests per onderdeel (detectoren met controlegetallen, beleid,
 validatie, tokens), stroomtests op de volledige verwerking met een databank in
 het geheugen, en tests op de echte API-endpoints. De foutscenario's zijn de
@@ -278,18 +278,18 @@ Alle opslag is lokaal. Er wordt niets naar een externe dienst of cloud gestuurd.
 ## Testen
 
 ```bash
-npm test          # 127 geautomatiseerde tests
+npm test          # 131 geautomatiseerde tests
 npm run typecheck # TypeScript-controle zonder te bouwen
 ```
 
 | Testbestand | Aantal | Wat wordt gecontroleerd |
 |---|---|---|
-| `classificatie.test.ts` | 32 | Herkenning van e-mail, rijksregisternummer (controlegetal), adres (geen valse treffers bij gewone zinnen, eigen adressen van het bestuur uitgezonderd), IBAN, trefwoorden; een korte leesbare tekst wordt gewoon beoordeeld, een korte scan niet; strengste classificatie wint; signalen van het taalmodel tellen mee; zonder taalmodel nooit publiek; veilige terugval bij te weinig tekst of een fout; geen technische details naar buiten; tekstherkenning: betrouwbare tekst gebruikt, onbetrouwbare weggegooid, falende herkenning valt veilig terug, een scan nooit publiek |
+| `classificatie.test.ts` | 33 | Herkenning van e-mail, rijksregisternummer (controlegetal), adres (geen valse treffers bij gewone zinnen, eigen adressen van het bestuur uitgezonderd), IBAN, trefwoorden; een korte leesbare tekst wordt gewoon beoordeeld, een korte scan niet; strengste classificatie wint; signalen van het taalmodel tellen mee; zonder taalmodel nooit publiek; veilige terugval bij te weinig tekst of een fout; geen technische details naar buiten; tekstherkenning: betrouwbare tekst gebruikt, onbetrouwbare weggegooid, falende herkenning valt veilig terug, een scan nooit publiek |
 | `ner.test.ts` | 9 | Naamherkenning: stukjes samenvoegen tot één naam, persoon → naam, plaats + huisnummer → adres, falend model stopt de verwerking niet; met het echte model: een naam zonder aanspreking, een adres zonder vast achtervoegsel, geen valse treffers op instellingen of functies |
 | `verwerking.test.ts` | 15 | De volledige stroom van aanbieden tot opslaan; echte tekstherkenning op de voorbeeldscans; een PDF of scan nooit publiek; een voorstel slaat niets op; alles-of-niets-registratie; auditlog onwijzigbaar; geen persoonsgegevens in het auditlog; veilige bestandsnamen |
 | `validatie.test.ts` | 13 | Leeg, te groot, extensie niet op de witte lijst, type uit de extensie (niet uit de browser), inhoud die niet bij het type past (ook vermomde PDF's en afbeeldingen), ongeldige metadata |
-| `api.test.ts` | 25 | De echte endpoints: het OpenAPI-contract dekt elk endpoint, elk documentveld heeft een betekenis in de JSON-LD-context, voorstel zonder opslag, aanmelden, blokkering na te veel pogingen (429), afmelden trekt het token in, een zelfgekozen rol in een header wordt genegeerd, een vervalst token geeft 401, statuscodes, rolcontrole, geen lek van het opslagpad, een medewerker vindt zijn eigen beslissing terug maar niet die van een ander, nazicht enkel voor een dossierbeheerder, integriteit van het auditlog, de publieke lijst toont een burger enkel wat definitief publiek is |
-| `nazicht.test.ts` | 12 | Nazicht: bevestigen, herclassificeren (bestand verhuist, toegang en bewaartermijn volgen), geweigerd zonder motivering, voor een medewerker, voor de aanbieder zelf (vier ogen), voor een document dat niet in nazicht staat; opruiming na de bewaartermijn bewaart het auditspoor; de hash-ketting wijst een gewijzigde of gewiste regel aan, ook als de triggers omzeild zijn |
+| `api.test.ts` | 27 | De echte endpoints: het OpenAPI-contract dekt elk endpoint, elk documentveld heeft een betekenis in de JSON-LD-context, voorstel zonder opslag, aanmelden, blokkering na te veel pogingen (429), afmelden trekt het token in, een zelfgekozen rol in een header wordt genegeerd, een vervalst token geeft 401, statuscodes, rolcontrole, geen lek van het opslagpad, een medewerker vindt zijn eigen beslissing terug maar niet die van een ander, nazicht enkel voor een dossierbeheerder, integriteit van het auditlog, de publieke lijst toont een burger enkel wat definitief publiek is |
+| `nazicht.test.ts` | 13 | Nazicht: bevestigen, herclassificeren (bestand verhuist, toegang en bewaartermijn volgen), geweigerd zonder motivering, voor een medewerker, voor de aanbieder zelf (vier ogen), voor een document dat niet in nazicht staat; opruiming na de bewaartermijn bewaart het auditspoor; de hash-ketting wijst een gewijzigde of gewiste regel aan, ook als de triggers omzeild zijn |
 | `autorisatie.test.ts` | 14 | Tokens (geldig, vervalste rol, ander geheim, verlopen), wachtwoordcontrole, identiteit met veilige standaard, toegangsbeslissingen |
 | `beleid.test.ts` | 7 | Elke classificatie heeft een regel; enkel publiek is publiek; toegang wordt per niveau strenger (beperkt vs. minimaal); bewaartermijnen |
 
@@ -482,7 +482,7 @@ kan valideren of er een client uit kan genereren.
 
 ### `GET /api/context.jsonld`: de betekenis van de velden
 
-Publiek. Een **JSON-LD-context** die de velden van een document koppelt aan een
+Publiek. Een **JSON-LD-context** die elk veld van een document koppelt aan een
 term uit een open vocabularium (Dublin Core, DCAT, PROV): `titel` is
 `dct:title`, `classificatie` is `dct:accessRights`, `sha256` is
 `spdx:checksum`. Het antwoord van `GET /api/documenten/:id` verwijst ernaar

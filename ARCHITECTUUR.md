@@ -183,7 +183,7 @@ medewerker, zonder het model om te gooien.
 
 **Wat betekenen de velden?** Een sleutel als `titel` zegt een ander systeem
 niets. Daarom publiceert de API een **JSON-LD-context** (`/api/context.jsonld`)
-die de velden van een document koppelt aan een term uit een open vocabularium
+die elk veld van een document koppelt aan een term uit een open vocabularium
 dat de publieke sector al gebruikt: Dublin Core (`dct:title`, `dct:created`,
 `dct:accessRights` voor de classificatie, `dct:conformsTo` voor de
 beleidsversie), DCAT (`dcat:byteSize`), SPDX (`spdx:checksum`) en PROV-O
@@ -464,10 +464,10 @@ databank en bestandsopslag gedeeld worden (PostgreSQL, objectopslag).
   verhuizing van het bestand, alle weigeringen incl. vier ogen), opruiming na
   de bewaartermijn (auditspoor blijft), en de hash-ketting: een gewijzigde of
   gewiste regel wordt aangewezen, ook nadat de triggers verwijderd zijn.
-- **Foutscenario's eerst.** Bijna elke regel uit §6 heeft een test; de uitzonderingen zijn de OCR-tijdslimiet, een te groot bestand (413) en een onleesbaar bestand op schijf (500), die handmatig zijn nagespeeld.
+- **Foutscenario's eerst.** Elke regel uit §6 heeft een test, ook de storingen: een hangende tekstherkenning, een te groot bestand, een bestand dat van de schijf verdween, een databank die midden in een nazicht weigert.
 - **Handmatig:** negen voorbeelddocumenten met verwachte uitkomst (README).
 
-127 tests, `npm test`. De tekst- en naamherkenning worden getest met echte
+131 tests, `npm test`. De tekst- en naamherkenning worden getest met echte
 scans en teksten én met een nagebootst model dat faalt of onbetrouwbaar is,
 zodat het veilige gedrag bij uitval bewezen is. Elk testbestand gebruikt een
 eigen databank in het geheugen en een eigen opslagmap, zodat testen nooit de
