@@ -602,7 +602,7 @@ omdat het laat zien waar de keuzes vandaan komen.
    komen en geen aanmelding te bouwen, omdat koppelen met een
    identiteitsprovider buiten de opdracht valt. Ik vond het onaanvaardbaar dat
    iedereen zich zo als dossierbeheerder kon voordoen. De aanmelding is gebouwd
-   in de vorm die ook in productie geldt: een ondertekend token dat de server
+   volgens hetzelfde principe als in productie: een ondertekend token dat de server
    bij elke aanvraag controleert, zodat later enkel de uitgever verandert.
 2. **Scans echt lezen.** Het advies was om scans altijd naar nazicht te sturen.
    Dan belandt elke scan in de strengste categorie en levert automatische
@@ -614,11 +614,7 @@ omdat het laat zien waar de keuzes vandaan komen.
    rijksregisternummer, IBAN) bewust patronen met controlegetallen blijven:
    exact en uitlegbaar.
 
-**Bewust niet overgenomen of niet gedaan:**
-- **Publiceren op een openbare cloud (Vercel)** voor gebruiksgemak: dat was
-  mijn eigen idee, maar het botst met de randvoorwaarde *"uitsluitend lokale of
-  afgeschermde testopslag"*. Ook met aanmelding zou een publieke link met vaste
-  testaccounts voor iedereen bereikbaar zijn.
+**Bewust niet overgenomen:**
 - **Koppeling met een echte identiteitsprovider (OpenID Connect):** buiten de
   scope; de testaanmelding in `src/autorisatie/aanmelding.ts` speelt die rol.
 - **Versienummering van de API (`/api/v1`):** weinig meerwaarde voor één
@@ -628,8 +624,6 @@ omdat het laat zien waar de keuzes vandaan komen.
   dossierbeheerder bestaat wel, omdat een twijfelgeval anders nooit afgerond
   raakt. De regel uit punt 10 zelf, en hoe die niet te omzeilen valt, wil ik
   tijdens de verdediging uitwerken en toelichten.
-- **Controle van de bestandsinhoud alleen documenteren:** eerst voorgesteld als
-  vervolgstap, uiteindelijk toch ingebouwd omdat het weinig code vraagt.
 
 **Mijn verantwoordelijkheid.** De juistheid, veiligheid en begrijpelijkheid
 van deze oplossing zijn mijn verantwoordelijkheid; elke keuze licht ik toe
