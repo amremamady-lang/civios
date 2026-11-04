@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentclassificatie</title>
+<style>
+  :root {
+    --rand: #d6d3d0; --tekst: #1c1a19; --zacht: #5f5b57; --vlak: #faf9f8;
+    --publiek: #2f6b4f; --intern: #7a6322; --persoon: #8a4a1e; --gevoelig: #8c2f2f;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; padding: 32px 16px; background: var(--vlak); color: var(--tekst);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 820px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .onder { color: var(--zacht); margin: 0 0 28px; font-size: .95rem; }
+  fieldset { border: 1px solid var(--rand); border-radius: 8px; padding: 20px; margin: 0 0 20px; background: #fff; }
+  legend { padding: 0 8px; font-weight: 600; font-size: .9rem; text-transform: uppercase; letter-spacing: .06em; }
+  label { display: block; margin: 14px 0 4px; font-size: .9rem; font-weight: 600; }
+  input, select, button {
+    font: inherit; padding: 9px 11px; border: 1px solid var(--rand);
+    border-radius: 6px; background: #fff; color: inherit; width: 100%;
+  }
+  button {
+    background: var(--tekst); color: #fff; border-color: var(--tekst);
+    cursor: pointer; font-weight: 600; margin-top: 18px;
+  }
+  button:hover { opacity: .9; }
+  .rij { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .rij { grid-template-columns: 1fr; } }
+  #uitkomst:empty { display: none; }
+  .kaart { border: 1px solid var(--rand); border-left-width: 5px; border-radius: 8px; padding: 18px; background: #fff; }
+  .kaart.publiek { border-left-color: var(--publiek); }
+  .kaart.intern { border-left-color: var(--intern); }
+  .kaart.persoonsgegevens { border-left-color: var(--persoon); }
+  .kaart.gevoelige_persoonsgegevens { border-left-color: var(--gevoelig); }
+  .kaart.fout { border-left-color: var(--gevoelig); background: #fdf6f6; }
+  .etiket { font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: var(--zacht); }
+  .groot { font-size: 1.25rem; font-weight: 700; margin: 2px 0 10px; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 14px 0 0; font-size: .92rem; }
+  dt { color: var(--zacht); }
+  dd { margin: 0; }
+  ul.signalen { margin: 12px 0 0; padding-left: 18px; font-size: .92rem; }
+  .waarschuwing { margin-top: 14px; padding: 10px 12px; border-radius: 6px; background: #fdf6f6; border: 1px solid #e8d4d4; font-size: .92rem; }
+  #terugvinden { margin-top: 20px; }
+  .zoekrij { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+  .zoekrij button { margin-top: 0; width: auto; padding-inline: 18px; }
+  @media (max-width: 560px) { .zoekrij { grid-template-columns: 1fr; } }
+  .toelichting { color: var(--zacht); font-size: .9rem; margin: 4px 0 0; }
+  #spoor:empty { display: none; }
+  #spoor { margin-top: 16px; }
+  .tabelvak { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rand); vertical-align: top; }
+  th { color: var(--zacht); font-weight: 600; white-space: nowrap; }
+  td.tijd { white-space: nowrap; }
+  .geweigerd { color: var(--gevoelig); font-weight: 600; }
+  .aanmeldrij { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+  .aanmeldrij button { margin-top: 0; width: auto; padding-inline: 18px; }
+  @media (max-width: 560px) { .aanmeldrij { grid-template-columns: 1fr; } }
+  .aangemeld { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  .aangemeld p { margin: 0; }
+  .aangemeld button { margin-top: 0; width: auto; padding-inline: 18px; background: #fff; color: var(--tekst); }
+  .melding { margin: 10px 0 0; font-size: .9rem; color: var(--gevoelig); }
+  .melding:empty { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Documentclassificatie en veilige opslag</h1>
+  <p class="onder">Prototype. Gebruik uitsluitend fictieve gegevens.</p>
+
+  <fieldset id="aanmelding">
+    <legend>Aanmelding</legend>
+    <form id="aanmeldformulier">
+      <p class="toelichting">
+        Niet aangemeld ben je een burger: je kan geen documenten aanbieden.
+        Gebruik een fictief testaccount uit de README.
+      </p>
+      <div class="aanmeldrij">
+        <div>
+          <label for="gebruikersnaam">Gebruikersnaam</label>
+          <input id="gebruikersnaam" autocomplete="username" required>
+        </div>
+        <div>
+          <label for="wachtwoord">Wachtwoord</label>
+          <input id="wachtwoord" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit">Aanmelden</button>
+      </div>
+      <p class="melding" id="aanmeldmelding"></p>
+    </form>
+    <div class="aangemeld" id="aangemeld" hidden>
+      <p>Aangemeld als <strong id="wieNaam"></strong> (<span id="wieRol"></span>)</p>
+      <button type="button" id="afmelden">Afmelden</button>
+    </div>
+  </fieldset>
+
+  <form id="formulier">
+    <fieldset>
+      <legend>Document</legend>
+      <label for="bestand">Bestand of scan (.txt, .md, .pdf, .jpg, .png — max 10 MB)</label>
+      <input id="bestand" name="bestand" type="file" required
+             accept=".txt,.md,.pdf,.jpg,.jpeg,.png">
+
+      <div class="rij">
+        <div>
+          <label for="titel">Titel</label>
+          <input id="titel" name="titel" placeholder="Bijvoorbeeld: nota archiefwerking">
+        </div>
+        <div>
+          <label for="bron">Bron</label>
+          <input id="bron" name="bron" value="loket">
+        </div>
+      </div>
+
+      <label for="zichtbaarheid">Beoogde zichtbaarheid</label>
+      <select id="zichtbaarheid" name="beoogdeZichtbaarheid">
+        <option value="intern">intern</option>
+        <option value="publiek">publiek</option>
+      </select>
+
+      <button type="submit">Classificeren</button>
+      <p class="toelichting">Je ziet eerst het voorgestelde resultaat. Er wordt pas iets opgeslagen als je bevestigt.</p>
+    </fieldset>
+  </form>
+
+  <div id="uitkomst"></div>
+
+  <fieldset id="nazicht" hidden>
+    <legend>Nazicht</legend>
+    <p class="toelichting">
+      Documenten die het systeem niet zeker wist, staan veilig opgeslagen en wachten op een
+      beslissing van een dossierbeheerder. Wie een document zelf aanbood, mag het niet zelf
+      afhandelen (vier ogen). Elke beslissing komt met motivering in het auditlog.
+    </p>
+    <button type="button" id="toonNazicht">Toon documenten in nazicht</button>
+    <div id="nazichtlijst"></div>
+  </fieldset>
+
+  <fieldset id="terugvinden">
+    <legend>Beslissing terugvinden</legend>
+    <p class="toelichting">
+      Toont het auditspoor van een document. Een medewerker ziet enkel het spoor van documenten
+      die hij zelf aanbood; een dossierbeheerder ziet alles. Ook elke inzage wordt zelf in het
+      auditlog vastgelegd.
+    </p>
+    <form id="zoekformulier" class="zoekrij">
+      <div>
+        <label for="documentId">Document-id</label>
+        <input id="documentId" placeholder="Wordt ingevuld na het opladen" required>
+      </div>
+      <button type="submit">Bekijk auditspoor</button>
+    </form>
+    <div id="spoor"></div>
+  </fieldset>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const uitkomst = $('uitkomst');
+const spoor = $('spoor');
+const nazichtvak = $('nazicht');
+const nazichtlijst = $('nazichtlijst');
+
+const LEESBAAR = {
+  publiek: 'Publiek',
+  intern: 'Intern',
+  persoonsgegevens: 'Persoonsgegevens',
+  gevoelige_persoonsgegevens: 'Gevoelige persoonsgegevens',
+};
+
+const HANDELINGEN = {
+  aangemeld: 'Aangemeld', afgemeld: 'Afgemeld', aanmelding_mislukt: 'Aanmelding mislukt',
+  classificatie_voorgesteld: 'Classificatie voorgesteld', document_aangeboden: 'Document aangeboden',
+  validatie_geweigerd: 'Validatie geweigerd', geclassificeerd: 'Geclassificeerd', opgeslagen: 'Opgeslagen',
+  in_nazicht_geplaatst: 'In nazicht geplaatst', nazicht_afgehandeld: 'Nazicht afgehandeld',
+  verwijderd_na_bewaartermijn: 'Verwijderd na bewaartermijn', toegang_verleend: 'Toegang verleend',
+  toegang_geweigerd: 'Toegang geweigerd', auditlog_geraadpleegd: 'Auditlog geraadpleegd',
+};
+
+/** Alles wat van de server komt, gaat als tekst de pagina in, nooit als HTML. */
+function ontsnap(waarde) {
+  const element = document.createElement('span');
+  element.textContent = String(waarde ?? '');
+  return element.innerHTML;
+}
+
+/* ---------------------------------------------------------------- */
+/* Aanmelding                                                        */
+/* ---------------------------------------------------------------- */
+
+/**
+ * Het token staat enkel in het geheugen van deze pagina, niet in
+ * localStorage: zo kan andere code op de pagina het niet blijvend uitlezen.
+ * Na het herladen van de pagina meld je opnieuw aan.
+ */
+let token = null;
+
+function toonAanmeldstatus(gebruiker, rol) {
+  const aangemeld = token !== null;
+  $('aanmeldformulier').hidden = aangemeld;
+  $('aangemeld').hidden = !aangemeld;
+  nazichtvak.hidden = rol !== 'dossierbeheerder';
+  if (aangemeld) {
+    $('wieNaam').textContent = gebruiker;
+    $('wieRol').textContent = rol;
+  }
+}
+
+function afmelden(boodschap) {
+  token = null;
+  toonAanmeldstatus();
+  $('aanmeldmelding').textContent = boodschap || '';
+  nazichtlijst.innerHTML = '';
+}
+
+/**
+ * Eén functie voor elk verzoek naar de API: stuurt het token mee, leest het
+ * antwoord, meldt af bij 401 en geeft { ok, data } terug. Bij een
+ * onbereikbare server: { ok: false, data: { boodschap } }.
+ */
+async function api(pad, opties = {}) {
+  const headers = { ...(token ? { Authorization: 'Bearer ' + token } : {}), ...(opties.headers || {}) };
+  let antwoord, data;
+  try {
+    antwoord = await fetch(pad, { ...opties, headers });
+    data = antwoord.status === 204 ? null : await antwoord.json();
+  } catch (fout) {
+    return { ok: false, data: { boodschap: 'De server is niet bereikbaar.' } };
+  }
+  if (antwoord.status === 401) afmelden(data.boodschap);
+  return { ok: antwoord.ok, data: data ?? {} };
+}
+
+const json = (body) => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+$('aanmeldformulier').addEventListener('submit', async (gebeurtenis) => {
+  gebeurtenis.preventDefault();
+  $('aanmeldmelding').textContent = '';
+  const { ok, data } = await api('/api/aanmelden', json({
+    gebruikersnaam: $('gebruikersnaam').value,
+    wachtwoord: $('wachtwoord').value,
+  }));
+  $('wachtwoord').value = '';
+  if (!ok) return ($('aanmeldmelding').textContent = data.boodschap || 'Aanmelden is mislukt.');
+  token = data.token;
+  toonAanmeldstatus(data.gebruiker, data.rol);
+});
+
+/** Afmelden op vraag van de gebruiker: het token wordt ook op de server ingetrokken. */
+$('afmelden').addEventListener('click', async () => {
+  await api('/api/afmelden', { method: 'POST' });
+  afmelden();
+});
+
+/* ---------------------------------------------------------------- */
+/* Classificeren (voorstel) en opslaan                               */
+/* ---------------------------------------------------------------- */
+
+/**
+ * Het document en de metadata zoals ze geclassificeerd werden. Bij het
+ * opslaan wordt precies dit opnieuw verstuurd; de server classificeert het
+ * dan zelf nog eens en neemt niets over van wat de pagina toonde.
+ */
+let laatsteGegevens = null;
+
+const bezig = (tekst) => (uitkomst.innerHTML = '<div class="kaart"><p class="etiket">Bezig</p><p>' + tekst + '</p></div>');
+
+function toonFout(boodschap) {
+  uitkomst.innerHTML =
+    '<div class="kaart fout"><p class="etiket">Niet aanvaard</p>' +
+    '<p class="groot">Geweigerd</p><p>' + ontsnap(boodschap) + '</p></div>';
+}
+
+/* Stap 1: classificeren en het voorgestelde resultaat bekijken. */
+$('formulier').addEventListener('submit', async (gebeurtenis) => {
+  gebeurtenis.preventDefault();
+  bezig('Het document wordt beoordeeld…');
+  const gegevens = new FormData();
+  gegevens.append('bestand', $('bestand').files[0]);
+  gegevens.append('titel', $('titel').value);
+  gegevens.append('bron', $('bron').value);
+  gegevens.append('beoogdeZichtbaarheid', $('zichtbaarheid').value);
+
+  const { ok, data } = await api('/api/classificaties', { method: 'POST', body: gegevens });
+  if (!ok) return toonFout(data.boodschap);
+  laatsteGegevens = gegevens;
+  toonResultaat(data, false);
+});
+
+/* Stap 2: opslaan volgens de classificatie. */
+async function slaVoorstelOp() {
+  if (!laatsteGegevens) return;
+  bezig('Het document wordt opgeslagen…');
+  const { ok, data } = await api('/api/documenten', { method: 'POST', body: laatsteGegevens });
+  if (!ok) return toonFout(data.boodschap);
+  laatsteGegevens = null;
+  toonResultaat(data, true);
+  $('documentId').value = data.documentId;
+  spoor.innerHTML = '';
+}
+
+/** Toont een voorstel (nog niets opgeslagen) of het opgeslagen resultaat. */
+function toonResultaat(d, opgeslagen) {
+  const signalen = (d.signalen || [])
+    .map((s) => '<li>' + ontsnap(s.type) + ' — ' + ontsnap(String(s.bewijs)) + ' (' + s.aantal + 'x)</li>')
+    .join('');
+  const nazicht = d.status !== 'in_nazicht' ? '' : opgeslagen
+    ? '<p class="waarschuwing">De classificatie was onzeker. Het document is veilig opgeslagen onder een voorzichtige categorie en wacht op nazicht door een dossierbeheerder.</p>'
+    : '<p class="waarschuwing">De classificatie is onzeker, bijvoorbeeld omdat een scan niet betrouwbaar gelezen kon worden. Het document wordt daarom voorzichtig opgeslagen en gaat naar nazicht.</p>';
+
+  uitkomst.innerHTML =
+    '<div class="kaart ' + ontsnap(d.classificatie) + '">' +
+      '<p class="etiket">' + (opgeslagen ? 'Opgeslagen' : 'Voorgestelde classificatie — nog niet opgeslagen') + '</p>' +
+      '<p class="groot">' + (LEESBAAR[d.classificatie] || ontsnap(d.classificatie)) + '</p>' +
+      '<p>' + ontsnap(d.motivering) + '</p>' +
+      (signalen ? '<ul class="signalen">' + signalen + '</ul>' : '') +
+      nazicht +
+      '<dl>' +
+        '<dt>Opslaglocatie</dt><dd>' + ontsnap(d.opslagmap) + '</dd>' +
+        '<dt>Toegang</dt><dd>' + ontsnap(d.toegang.join(', ')) + '</dd>' +
+        '<dt>Bewaren tot</dt><dd>' + ontsnap(d.bewarenTot.slice(0, 10)) + '</dd>' +
+        '<dt>Status</dt><dd>' + ontsnap(d.status) + '</dd>' +
+        '<dt>Beleidsversie</dt><dd>' + ontsnap(d.beleidsversie) + '</dd>' +
+        (opgeslagen ? '<dt>Document-id</dt><dd>' + ontsnap(d.documentId) + '</dd>' : '') +
+      '</dl>' +
+      (opgeslagen ? '' : '<button type="button" id="opslaan">Opslaan volgens deze classificatie</button>') +
+    '</div>';
+  if (!opgeslagen) $('opslaan').addEventListener('click', slaVoorstelOp);
+}
+
+/* ---------------------------------------------------------------- */
+/* Nazicht afhandelen (dossierbeheerder)                             */
+/* ---------------------------------------------------------------- */
+
+async function laadNazicht() {
+  nazichtlijst.innerHTML = '<p class="toelichting">Bezig met ophalen…</p>';
+  const { ok, data } = await api('/api/nazicht');
+  if (!ok) return (nazichtlijst.innerHTML = '<div class="kaart fout"><p>' + ontsnap(data.boodschap) + '</p></div>');
+  if (data.length === 0) return (nazichtlijst.innerHTML = '<p class="toelichting">Er staan geen documenten in nazicht.</p>');
+
+  nazichtlijst.innerHTML = data.map((d) => {
+    const opties = Object.keys(LEESBAAR)
+      .map((c) => '<option value="' + c + '"' + (c === d.classificatie ? ' selected' : '') + '>' + LEESBAAR[c] + '</option>')
+      .join('');
+    return '<div class="kaart ' + ontsnap(d.classificatie) + ' nazichtkaart" data-id="' + ontsnap(d.id) + '">' +
+      '<p class="etiket">In nazicht sinds ' + ontsnap(new Date(d.aangemaakt_op).toLocaleString('nl-BE')) + '</p>' +
+      '<p class="groot">' + ontsnap(d.titel) + '</p>' +
+      '<dl><dt>Bron</dt><dd>' + ontsnap(d.bron) + '</dd>' +
+        '<dt>Voorlopig</dt><dd>' + (LEESBAAR[d.classificatie] || ontsnap(d.classificatie)) + '</dd>' +
+        '<dt>Document-id</dt><dd>' + ontsnap(d.id) + '</dd></dl>' +
+      '<label>Classificatie na nazicht</label><select class="nz-classificatie">' + opties + '</select>' +
+      '<label>Motivering (verplicht)</label>' +
+      '<input class="nz-motivering" placeholder="Bijvoorbeeld: scan nagekeken, bevat geen persoonsgegevens">' +
+      '<div class="rij">' +
+        '<button type="button" class="nz-bevestig">Bevestig huidige classificatie</button>' +
+        '<button type="button" class="nz-herclassificeer">Sla op met gekozen classificatie</button>' +
+      '</div><p class="melding nz-melding"></p></div>';
+  }).join('');
+}
+
+nazichtlijst.addEventListener('click', async (gebeurtenis) => {
+  const knop = gebeurtenis.target.closest('button');
+  if (!knop) return;
+  const kaart = knop.closest('.nazichtkaart');
+  const melding = kaart.querySelector('.nz-melding');
+  melding.textContent = '';
+  const { ok, data } = await api('/api/documenten/' + encodeURIComponent(kaart.dataset.id) + '/nazicht', json({
+    beslissing: knop.classList.contains('nz-bevestig') ? 'bevestigen' : 'herclassificeren',
+    classificatie: kaart.querySelector('.nz-classificatie').value,
+    motivering: kaart.querySelector('.nz-motivering').value,
+  }));
+  if (!ok) return (melding.textContent = data.boodschap || 'Er liep iets mis.');
+  await laadNazicht();
+  $('documentId').value = data.documentId;
+});
+
+$('toonNazicht').addEventListener('click', laadNazicht);
+
+/* ---------------------------------------------------------------- */
+/* Beslissing terugvinden in het auditlog                            */
+/* ---------------------------------------------------------------- */
+
+$('zoekformulier').addEventListener('submit', async (gebeurtenis) => {
+  gebeurtenis.preventDefault();
+  spoor.innerHTML = '<p class="toelichting">Bezig met ophalen…</p>';
+  const { ok, data } = await api('/api/auditlog?documentId=' + encodeURIComponent($('documentId').value.trim()));
+  if (!ok) return (spoor.innerHTML = '<div class="kaart fout"><p class="etiket">Geen toegang</p><p>' + ontsnap(data.boodschap) + '</p></div>');
+  if (data.length === 0) return (spoor.innerHTML = '<p class="toelichting">Geen auditregels gevonden voor dit document-id.</p>');
+
+  const rijen = data.map((r) =>
+    '<tr><td class="tijd">' + ontsnap(new Date(r.tijdstip).toLocaleString('nl-BE')) + '</td>' +
+    '<td>' + ontsnap(r.actor) + '<br><span class="toelichting">' + ontsnap(r.rol) + '</span></td>' +
+    '<td class="' + (r.uitkomst === 'geweigerd' ? 'geweigerd' : '') + '">' + ontsnap(HANDELINGEN[r.handeling] || r.handeling) + '</td>' +
+    '<td>' + ontsnap(r.motivering || '') + '</td></tr>'
+  ).join('');
+  spoor.innerHTML =
+    '<div class="tabelvak"><table><thead><tr><th>Tijdstip</th><th>Wie</th><th>Handeling</th><th>Motivering</th></tr></thead>' +
+    '<tbody>' + rijen + '</tbody></table></div>';
+});
+</script>
+</body>
+</html>

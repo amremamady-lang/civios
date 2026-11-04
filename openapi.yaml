@@ -1,0 +1,313 @@
+openapi: 3.1.0
+info:
+  title: Civios documentclassificatie
+  version: 1.0.0
+  description: |
+    Prototype: een document aanbieden, automatisch laten classificeren, het
+    voorstel bekijken, opslaan volgens de classificatie en de beslissing
+    terugvinden in een auditlog. Alle fouten hebben dezelfde vorm (`Fout`).
+    De betekenis van de velden van een document staat in `/api/context.jsonld`.
+servers:
+  - url: http://localhost:3000
+
+components:
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Verkregen via POST /api/aanmelden. Zonder token ben je een anonieme burger.
+  schemas:
+    Fout:
+      type: object
+      required: [fout, boodschap]
+      properties:
+        fout: { type: string, description: Vaste code voor programma's, bv. bestandstype_niet_toegestaan }
+        boodschap: { type: string, description: Zin in gewone taal voor de gebruiker }
+    Classificatie:
+      type: string
+      enum: [publiek, intern, persoonsgegevens, gevoelige_persoonsgegevens]
+    Rol:
+      type: string
+      enum: [burger, medewerker, dossierbeheerder]
+    Signaal:
+      type: object
+      properties:
+        type: { type: string, enum: [emailadres, rijksregisternummer, adres, naam, iban, trefwoord_medisch, trefwoord_strafrechtelijk, trefwoord_financieel] }
+        impliceert: { $ref: '#/components/schemas/Classificatie' }
+        bewijs: { type: string, description: Gemaskeerd; nooit het persoonsgegeven zelf }
+        aantal: { type: integer }
+    Beslissing:
+      type: object
+      properties:
+        classificatie: { $ref: '#/components/schemas/Classificatie' }
+        zekerheid: { type: string, enum: [zeker, onzeker] }
+        motivering: { type: string }
+        signalen: { type: array, items: { $ref: '#/components/schemas/Signaal' } }
+        status: { type: string, enum: [definitief_opgeslagen, in_nazicht] }
+        opslagmap: { type: string }
+        toegang: { type: array, items: { $ref: '#/components/schemas/Rol' } }
+        bewarenTot: { type: string, format: date-time }
+        beleidsversie: { type: string }
+    Opgeslagen:
+      allOf:
+        - $ref: '#/components/schemas/Beslissing'
+        - type: object
+          properties:
+            documentId: { type: string, format: uuid }
+    Document:
+      type: object
+      description: De fiche van een opgeslagen document, zonder intern opslagpad. Bevat `@context` (JSON-LD).
+      properties:
+        '@context': { type: string, example: /api/context.jsonld }
+        id: { type: string, format: uuid }
+        titel: { type: string }
+        bron: { type: string }
+        bestandsnaam: { type: string }
+        mimetype: { type: string }
+        grootte_bytes: { type: integer }
+        sha256: { type: string }
+        classificatie: { $ref: '#/components/schemas/Classificatie' }
+        zekerheid: { type: string, enum: [zeker, onzeker] }
+        status: { type: string, enum: [definitief_opgeslagen, in_nazicht] }
+        toegang: { type: array, items: { $ref: '#/components/schemas/Rol' } }
+        bewaren_tot: { type: string, format: date-time }
+        beleidsversie: { type: string }
+        aangemaakt_op: { type: string, format: date-time }
+    Auditregel:
+      type: object
+      properties:
+        id: { type: integer }
+        tijdstip: { type: string, format: date-time }
+        actor: { type: string }
+        rol: { type: string }
+        document_id: { type: [string, 'null'] }
+        handeling: { type: string }
+        classificatie: { type: [string, 'null'] }
+        zekerheid: { type: [string, 'null'] }
+        signalen: { type: [string, 'null'], description: JSON-lijst van gemaskeerde signalen }
+        motivering: { type: [string, 'null'] }
+        beleidsversie: { type: [string, 'null'] }
+        uitkomst: { type: string, enum: [geslaagd, geweigerd] }
+        vorige_hash: { type: [string, 'null'] }
+        hash: { type: string, description: SHA-256 over deze regel en de vorige hash }
+    Aanbieding:
+      type: object
+      required: [bestand]
+      properties:
+        bestand: { type: string, format: binary, description: ".txt, .md, .pdf, .jpg/.jpeg of .png, max. 10 MB; type uit de extensie, inhoud gecontroleerd" }
+        titel: { type: string, maxLength: 200, description: Leeg = bestandsnaam }
+        bron: { type: string, maxLength: 100, description: Leeg = onbekend }
+        beoogdeZichtbaarheid: { type: string, enum: [publiek, intern], default: intern, description: Telt enkel als er geen persoonsgegevens gevonden worden }
+  responses:
+    Fout400: { description: Ongeldig verzoek, content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+    Fout401: { description: Token vervalst, verlopen of ingetrokken (aanmelding_ongeldig), content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+    Fout403: { description: Geen rechten (geen_rechten); gelogd, content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+    Fout404: { description: Onbekend document (niet_gevonden), content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+    Fout413: { description: Groter dan 10 MB (bestand_te_groot), content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+    Fout422: { description: Inhoudelijk geweigerd; gelogd, content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+
+paths:
+  /api/aanmelden:
+    post:
+      summary: Aanmelden met een testaccount; geeft een ondertekend token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gebruikersnaam, wachtwoord]
+              properties:
+                gebruikersnaam: { type: string }
+                wachtwoord: { type: string }
+      responses:
+        '200':
+          description: Token, 8 uur geldig
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  gebruiker: { type: string }
+                  rol: { $ref: '#/components/schemas/Rol' }
+                  geldigTot: { type: string, format: date-time }
+        '401': { description: Gebruikersnaam of wachtwoord onjuist (aanmelding_mislukt); dezelfde boodschap in beide gevallen, content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+        '429':
+          description: Te veel mislukte pogingen (te_veel_pogingen), 15 minuten geblokkeerd
+          headers:
+            Retry-After: { schema: { type: integer }, description: Seconden }
+          content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } }
+
+  /api/afmelden:
+    post:
+      summary: Het token intrekken, ook vóór het verloopt
+      security: [{ token: [] }]
+      responses:
+        '204': { description: Ingetrokken }
+        '401': { $ref: '#/components/responses/Fout401' }
+
+  /api/classificaties:
+    post:
+      summary: Voorgesteld resultaat bekijken, zonder iets op te slaan
+      security: [{ token: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/Aanbieding' }
+      responses:
+        '200': { description: Het voorstel, content: { application/json: { schema: { $ref: '#/components/schemas/Beslissing' } } } }
+        '400': { $ref: '#/components/responses/Fout400' }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+        '413': { $ref: '#/components/responses/Fout413' }
+        '422': { $ref: '#/components/responses/Fout422' }
+
+  /api/documenten:
+    post:
+      summary: Opslaan volgens de classificatie (de server classificeert opnieuw)
+      security: [{ token: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/Aanbieding' }
+      responses:
+        '201': { description: Opgeslagen, content: { application/json: { schema: { $ref: '#/components/schemas/Opgeslagen' } } } }
+        '400': { $ref: '#/components/responses/Fout400' }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+        '413': { $ref: '#/components/responses/Fout413' }
+        '422': { $ref: '#/components/responses/Fout422' }
+
+  /api/documenten/{id}:
+    get:
+      summary: De beslissing terugvinden (zonder intern opslagpad)
+      security: [{ token: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: De fiche, content: { application/ld+json: { schema: { $ref: '#/components/schemas/Document' } }, application/json: { schema: { $ref: '#/components/schemas/Document' } } } }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+        '404': { $ref: '#/components/responses/Fout404' }
+
+  /api/documenten/{id}/bestand:
+    get:
+      summary: Het bestand zelf, als download
+      security: [{ token: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Het bestand (Content-Type uit de fiche, Content-Disposition attachment) }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+        '404': { $ref: '#/components/responses/Fout404' }
+        '500': { description: Bestand niet beschikbaar (bestand_niet_beschikbaar), content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+
+  /api/documenten/{id}/nazicht:
+    post:
+      summary: Nazicht afhandelen (enkel dossierbeheerder, nooit de aanbieder zelf)
+      security: [{ token: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [beslissing, motivering]
+              properties:
+                beslissing: { type: string, enum: [bevestigen, herclassificeren] }
+                classificatie: { $ref: '#/components/schemas/Classificatie' }
+                motivering: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '200':
+          description: Afgehandeld; het document is definitief
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uitkomst: { type: string, enum: [afgehandeld] }
+                  documentId: { type: string, format: uuid }
+                  classificatie: { $ref: '#/components/schemas/Classificatie' }
+                  opslagmap: { type: string }
+        '400': { $ref: '#/components/responses/Fout400' }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+        '404': { $ref: '#/components/responses/Fout404' }
+        '422': { description: niet_in_nazicht, motivering_ontbreekt, classificatie_ongeldig of vier_ogen; gelogd, content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
+
+  /api/nazicht:
+    get:
+      summary: Documenten die op een beslissing wachten (dossierbeheerder)
+      security: [{ token: [] }]
+      responses:
+        '200': { description: Oudste eerst, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Document' } } } } }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+
+  /api/auditlog:
+    get:
+      summary: Het auditspoor
+      description: Zonder documentId de laatste 50 regels (dossierbeheerder). Met documentId het spoor van dat document (dossierbeheerder altijd; medewerker enkel voor documenten die hij zelf aanbood). Elke inzage wordt zelf gelogd.
+      security: [{ token: [] }]
+      parameters: [{ name: documentId, in: query, required: false, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Auditregels, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Auditregel' } } } } }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+
+  /api/auditlog/integriteit:
+    get:
+      summary: Is de hash-ketting van het auditlog intact? (dossierbeheerder)
+      security: [{ token: [] }]
+      responses:
+        '200':
+          description: Rapport
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  intact: { type: boolean }
+                  aantalRegels: { type: integer }
+                  eersteBreuk: { type: integer, description: Id van de eerste gebroken regel, enkel als niet intact }
+        '401': { $ref: '#/components/responses/Fout401' }
+        '403': { $ref: '#/components/responses/Fout403' }
+
+  /api/beleid:
+    get:
+      summary: De geldende regels per classificatie, met versie
+      responses:
+        '200':
+          description: Beleid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  versie: { type: string }
+                  regels:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        opslagmap: { type: string }
+                        toegang: { type: array, items: { $ref: '#/components/schemas/Rol' } }
+                        bewaartermijnDagen: { type: integer }
+                        publiekToegankelijk: { type: boolean }
+                        toelichting: { type: string }
+
+  /api/openapi.yaml:
+    get:
+      summary: Dit contract
+      responses:
+        '200': { description: OpenAPI 3.1, content: { application/yaml: {} } }
+
+  /api/context.jsonld:
+    get:
+      summary: De betekenis van de documentvelden (JSON-LD-context, Dublin Core, DCAT, PROV)
+      responses:
+        '200': { description: JSON-LD-context, content: { application/ld+json: {} } }
