@@ -373,7 +373,7 @@ woord met een hoofdletter verdenken.
 
 **Namen en vrije adressen: lokaal taalmodel** (`src/classificatie/ner.ts`). Het
 model `Xenova/bert-base-multilingual-cased-ner-hrl` (BERT, meertalig, ook
-Nederlands) duidt per woord aan of het een persoon, plaats, organisatie of datum
+Nederlands) duidt per woord aan of het een persoon, plaats of organisatie
 is. Een persoon wordt het signaal *naam*; een plaats gevolgd door een huisnummer
 wordt het signaal *adres*. Enkel herkenningen met een score van minstens 0,80
 tellen. Zoals de opdracht vraagt bij het gebruik van AI:
