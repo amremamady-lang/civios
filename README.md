@@ -220,15 +220,17 @@ op een beslissing wachten.
 | `j.peeters` | `Demo-medewerker-2026` | medewerker |
 | `m.claes` | `Demo-beheerder-2026` | dossierbeheerder |
 
-Niet aangemeld ben je een *burger*: je kan dan geen documenten aanbieden.
-De wachtwoorden staan enkel als scrypt-hash in de code. Deze accounts bestaan
+Niet aangemeld ben je een *burger*: het scherm toont dan enkel de aanmelding,
+en ook de API weigert dan elk document (`403`). De wachtwoorden staan enkel als scrypt-hash in de code. Deze accounts bestaan
 alleen om het prototype te testen; in productie meld je aan via de
 identiteitsprovider van het bestuur (zie ARCHITECTUUR.md, §7).
 
 **Korte demo (6 minuten):**
-1. Classificeer `05-gevoelig-medisch.txt` **zonder aan te melden** → geweigerd.
-2. Meld aan als `j.peeters` (medewerker) en classificeer het opnieuw → het
-   voorstel *gevoelige persoonsgegevens*, nog niet opgeslagen.
+1. Open http://localhost:3000: zonder aanmelding is er niets aan te bieden.
+   Wie de API rechtstreeks probeert, krijgt `403` (zie de API-tests).
+2. Meld aan als `j.peeters` (medewerker) en classificeer
+   `05-gevoelig-medisch.txt` → het voorstel *gevoelige persoonsgegevens*, nog
+   niet opgeslagen.
 3. Klik *Opslaan volgens deze classificatie* → opgeslagen, met document-id.
 4. Klik *Bekijk auditspoor* → `j.peeters` vindt de beslissing over zijn eigen
    document terug: geclassificeerd, opgeslagen, en zijn eigen inzage.

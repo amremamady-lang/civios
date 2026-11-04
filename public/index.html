@@ -28,10 +28,11 @@
   /* Kop: titel links, aanmelding rechts */
   header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 22px 0 18px; border-bottom: 1px solid var(--rand); margin-bottom: 24px; }
   header p { margin: 2px 0 0; color: var(--zacht); font-size: .9rem; }
-  #aanmeldformulier { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  #aanmeldformulier input { width: 150px; }
   #aangemeld { display: flex; gap: 12px; align-items: center; font-size: .92rem; }
   #aangemeld strong { color: var(--groen); }
+  /* Zonder aanmelding is er enkel de aanmeldkaart */
+  #aanmeldkaart { max-width: 420px; }
+  #aanmeldkaart .acties { margin-top: 18px; }
 
   section { background: var(--wit); border: 1px solid var(--rand); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 18px; }
   .toelichting { color: var(--zacht); font-size: .9rem; margin: 0 0 14px; }
@@ -92,23 +93,29 @@
       <h1>Documentclassificatie en veilige opslag</h1>
       <p>Prototype. Enkel fictieve gegevens.</p>
     </div>
-    <div>
-      <form id="aanmeldformulier">
-        <input id="gebruikersnaam" placeholder="Gebruikersnaam" autocomplete="username" required>
-        <input id="wachtwoord" type="password" placeholder="Wachtwoord" autocomplete="current-password" required>
-        <button type="submit">Aanmelden</button>
-      </form>
-      <div id="aangemeld" hidden>
-        <span><strong id="wieNaam"></strong> · <span id="wieRol"></span></span>
-        <button type="button" id="afmelden" class="licht klein">Afmelden</button>
-      </div>
-      <p class="melding" id="aanmeldmelding"></p>
+    <div id="aangemeld" hidden>
+      <span><strong id="wieNaam"></strong> · <span id="wieRol"></span></span>
+      <button type="button" id="afmelden" class="licht klein">Afmelden</button>
     </div>
   </header>
 
+  <section id="aanmeldkaart">
+    <h2>Aanmelden</h2>
+    <p class="toelichting">Enkel een aangemelde medewerker of dossierbeheerder kan documenten aanbieden. Gebruik een fictief testaccount uit de README.</p>
+    <form id="aanmeldformulier">
+      <label for="gebruikersnaam">Gebruikersnaam</label>
+      <input id="gebruikersnaam" autocomplete="username" required>
+      <label for="wachtwoord">Wachtwoord</label>
+      <input id="wachtwoord" type="password" autocomplete="current-password" required>
+      <p class="melding" id="aanmeldmelding"></p>
+      <div class="acties"><button type="submit">Aanmelden</button></div>
+    </form>
+  </section>
+
+  <div id="werkruimte" hidden>
   <section>
     <h2>Document aanbieden</h2>
-    <p class="toelichting">Je ziet eerst het voorgestelde resultaat. Er wordt pas iets opgeslagen als je bevestigt. Niet aangemeld ben je een burger en kan je geen documenten aanbieden.</p>
+    <p class="toelichting">Je ziet eerst het voorgestelde resultaat. Er wordt pas iets opgeslagen als je bevestigt.</p>
     <form id="formulier">
       <label for="bestand">Bestand of scan (.txt, .md, .pdf, .jpg, .png, max. 10 MB)</label>
       <input id="bestand" type="file" required accept=".txt,.md,.pdf,.jpg,.jpeg,.png">
@@ -139,6 +146,7 @@
     </form>
     <div id="spoor"></div>
   </section>
+  </div>
 </main>
 
 <script>
@@ -184,7 +192,8 @@ let token = null;
 
 function toonAanmeldstatus(gebruiker, rol) {
   const aangemeld = token !== null;
-  $('aanmeldformulier').hidden = aangemeld;
+  $('aanmeldkaart').hidden = aangemeld;
+  $('werkruimte').hidden = !aangemeld;
   $('aangemeld').hidden = !aangemeld;
   nazichtvak.hidden = rol !== 'dossierbeheerder';
   if (aangemeld) {
@@ -197,7 +206,10 @@ function afmelden(boodschap) {
   token = null;
   toonAanmeldstatus();
   $('aanmeldmelding').textContent = boodschap || '';
+  uitkomst.innerHTML = '';
+  spoor.innerHTML = '';
   nazichtlijst.innerHTML = '';
+  laatsteGegevens = null;
 }
 
 /**
