@@ -226,8 +226,9 @@ alleen om het prototype te testen; in productie meld je aan via de
 identiteitsprovider van het bestuur (zie ARCHITECTUUR.md, §7).
 
 **Korte demo (6 minuten):**
-1. Open http://localhost:3000: zonder aanmelding is er niets aan te bieden.
-   Wie de API rechtstreeks probeert, krijgt `403` (zie de API-tests).
+1. Open http://localhost:3000: zonder aanmelding ben je burger en zie je
+   enkel de lijst *Publieke documenten* (nog leeg) en de aanmelding. Wie de
+   API rechtstreeks een document stuurt, krijgt `403` (zie de API-tests).
 2. Meld aan als `j.peeters` (medewerker) en classificeer
    `05-gevoelig-medisch.txt` → het voorstel *gevoelige persoonsgegevens*, nog
    niet opgeslagen.
@@ -256,6 +257,11 @@ identiteitsprovider van het bestuur (zie ARCHITECTUUR.md, §7).
    document is definitief, verhuist naar de publieke map en het spoor toont
    de beslissing mét motivering. (Had `m.claes` de scan zelf aangeboden, dan
    was dit geweigerd: vier ogen.)
+10. Meld af. Als burger staat de brochure nu in *Publieke documenten* en kan
+    je ze openen; het medisch attest uit stap 2 staat er niet. Meld aan als
+    `j.peeters`, vul het document-id van stap 3 in en klik *Bekijk bestand*
+    → geweigerd: een medewerker ziet geen gevoelige documenten. Als `m.claes`
+    wel.
 
 | Omgevingsvariabele | Standaard | Betekenis |
 |---|---|---|
@@ -424,6 +430,13 @@ Aangemeld als `dossierbeheerder`. Rekent de hash-ketting van het hele auditlog
 na: `{ "intact": true, "aantalRegels": 128 }`, of bij manipulatie
 `{ "intact": false, "aantalRegels": 128, "eersteBreuk": 42 }` met het nummer
 van de eerste regel die niet meer klopt.
+
+### `GET /api/publiek`: wat iedereen mag zien
+
+Zonder aanmelding. Lijst van documenten die definitief als `publiek` zijn
+ingeschaald, nieuwste eerst. Wat in nazicht staat, komt er nooit in. Het
+bestand zelf haal je op via `GET /api/documenten/:id/bestand`; voor een
+publiek document mag dat ook als burger. **200**.
 
 ### `GET /api/nazicht`: documenten die op een beslissing wachten
 

@@ -265,6 +265,14 @@ export function maakApp(db: Db, instellingen: Instellingen): express.Express {
     });
   });
 
+  /**
+   * Wat publiek is, mag iedereen zien, ook zonder aanmelding. Enkel wat
+   * definitief als publiek is ingeschaald komt hier; wat in nazicht staat niet.
+   */
+  app.get('/api/publiek', (_req, res) => {
+    res.json(documenten.publiek().map(naarBuiten));
+  });
+
   app.get('/api/documenten/:id', (req, res) => {
     const document = controleerInzage(req, res);
     if (document) res.json(naarBuiten(document));

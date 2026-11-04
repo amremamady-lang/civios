@@ -239,6 +239,12 @@ paths:
         '404': { $ref: '#/components/responses/Fout404' }
         '422': { description: niet_in_nazicht, motivering_ontbreekt, classificatie_ongeldig of vier_ogen; gelogd, content: { application/json: { schema: { $ref: '#/components/schemas/Fout' } } } }
 
+  /api/publiek:
+    get:
+      summary: Definitief publieke documenten; voor iedereen, ook zonder aanmelding
+      responses:
+        '200': { description: Nieuwste eerst, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Document' } } } } }
+
   /api/nazicht:
     get:
       summary: Documenten die op een beslissing wachten (dossierbeheerder)

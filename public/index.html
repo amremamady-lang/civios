@@ -76,7 +76,13 @@
 
   /* Auditspoor */
   .zoekrij { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+  .zoekrij .acties { margin: 0; flex-wrap: nowrap; }
   .zoekrij button { white-space: nowrap; }
+  ul.lijst { list-style: none; margin: 0; padding: 0; }
+  ul.lijst li { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rand); }
+  ul.lijst li:last-child { border-bottom: 0; }
+  ul.lijst .naam { font-weight: 600; flex: 1 1 200px; }
+  ul.lijst .zacht { color: var(--zacht); font-size: .86rem; }
   @media (max-width: 560px) { .zoekrij { grid-template-columns: 1fr; } }
   .tabelvak { overflow-x: auto; margin-top: 14px; }
   table { width: 100%; border-collapse: collapse; font-size: .86rem; }
@@ -142,11 +148,22 @@
     <p class="toelichting">Het auditspoor van een document. Een medewerker ziet enkel het spoor van documenten die hij zelf aanbood; een dossierbeheerder ziet alles. Ook elke inzage wordt vastgelegd.</p>
     <form id="zoekformulier" class="zoekrij">
       <div><label for="documentId">Document-id</label><input id="documentId" placeholder="Wordt ingevuld na het opslaan" required></div>
-      <button type="submit" class="licht">Bekijk auditspoor</button>
+      <div class="acties">
+        <button type="submit" class="licht">Bekijk auditspoor</button>
+        <button type="button" class="licht" id="bekijkDocument">Bekijk bestand</button>
+      </div>
     </form>
     <div id="spoor"></div>
+    <div id="documentweergave" class="weergave" hidden></div>
   </section>
   </div>
+
+  <section>
+    <h2>Publieke documenten</h2>
+    <p class="toelichting">Wat definitief als publiek is ingeschaald, mag iedereen zien, ook zonder aanmelding. Wat in nazicht staat, komt hier nooit.</p>
+    <div id="publiekelijst"></div>
+    <div id="publiekweergave" class="weergave" hidden></div>
+  </section>
 </main>
 
 <script>
@@ -209,7 +226,9 @@ function afmelden(boodschap) {
   uitkomst.innerHTML = '';
   spoor.innerHTML = '';
   nazichtlijst.innerHTML = '';
+  $('documentweergave').hidden = true;
   laatsteGegevens = null;
+  laadPubliek();
 }
 
 /**
@@ -243,6 +262,7 @@ $('aanmeldformulier').addEventListener('submit', async (gebeurtenis) => {
   if (!ok) return ($('aanmeldmelding').textContent = data.boodschap || 'Aanmelden is mislukt.');
   token = data.token;
   toonAanmeldstatus(data.gebruiker, data.rol);
+  laadPubliek();
 });
 
 /** Afmelden op vraag van de gebruiker: het token wordt ook op de server ingetrokken. */
@@ -421,8 +441,44 @@ nazichtlijst.addEventListener('click', async (gebeurtenis) => {
 $('toonNazicht').addEventListener('click', laadNazicht);
 
 /* ---------------------------------------------------------------- */
+/* Publieke documenten: voor iedereen, ook zonder aanmelding         */
+/* ---------------------------------------------------------------- */
+
+async function laadPubliek() {
+  const lijst = $('publiekelijst');
+  $('publiekweergave').hidden = true;
+  const { ok, data } = await api('/api/publiek');
+  if (!ok) return (lijst.innerHTML = '<p class="melding">' + ontsnap(data.boodschap) + '</p>');
+  if (data.length === 0) return (lijst.innerHTML = '<p class="toelichting">Er zijn nog geen publieke documenten.</p>');
+  lijst.innerHTML = '<ul class="lijst">' + data.map((d) =>
+    '<li data-id="' + ontsnap(d.id) + '"><span class="naam">' + ontsnap(d.titel) + '</span>' +
+    '<span class="zacht">' + ontsnap(d.bron) + ' · ' + ontsnap(d.aangemaakt_op.slice(0, 10)) + '</span>' +
+    '<button type="button" class="licht klein">Bekijk</button></li>'
+  ).join('') + '</ul>';
+}
+
+$('publiekelijst').addEventListener('click', (gebeurtenis) => {
+  const knop = gebeurtenis.target.closest('button');
+  if (!knop) return;
+  const vak = $('publiekweergave');
+  vak.hidden = false;
+  bekijkBestand(knop.closest('li').dataset.id, vak);
+});
+
+laadPubliek();
+
+/* ---------------------------------------------------------------- */
 /* Beslissing terugvinden in het auditlog                            */
 /* ---------------------------------------------------------------- */
+
+/** Het bestand zelf: de server past dezelfde toegangsregels toe als op de API. */
+$('bekijkDocument').addEventListener('click', () => {
+  const id = $('documentId').value.trim();
+  if (!id) return;
+  const vak = $('documentweergave');
+  vak.hidden = false;
+  bekijkBestand(id, vak);
+});
 
 $('zoekformulier').addEventListener('submit', async (gebeurtenis) => {
   gebeurtenis.preventDefault();

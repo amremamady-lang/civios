@@ -372,3 +372,20 @@ describe('GET /api/auditlog', () => {
     expect(spoor[3].actor).toBe('m.claes');
   });
 });
+
+describe('GET /api/publiek (zonder aanmelding)', () => {
+  it('toont een burger enkel wat definitief publiek is, en laat dat bestand ook lezen', async () => {
+    const publiek = await (await stuur('medewerker', 'Openingsuren van de bibliotheek tijdens de zomer.')).json();
+    const intern = await (await stuur('medewerker', 'Interne nota over de herinrichting.', 'nota.txt', 'text/plain', 'intern')).json();
+    expect(publiek.classificatie).toBe('publiek');
+
+    const lijst = await (await haal('/api/publiek', 'burger')).json();
+    const ids = lijst.map((d: { id: string }) => d.id);
+    expect(ids).toContain(publiek.documentId);
+    expect(ids).not.toContain(intern.documentId);
+    expect(JSON.stringify(lijst)).not.toContain('opslagpad');
+
+    expect((await haal(`/api/documenten/${publiek.documentId}/bestand`, 'burger')).status).toBe(200);
+    expect((await haal(`/api/documenten/${intern.documentId}/bestand`, 'burger')).status).toBe(403);
+  });
+});

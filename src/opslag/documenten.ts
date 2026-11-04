@@ -54,6 +54,13 @@ export class Documentenregister {
       | undefined;
   }
 
+  /** Definitief publieke documenten, nieuwste eerst: wat een burger mag zien. */
+  publiek(): Documentrij[] {
+    return this.db
+      .prepare("SELECT * FROM documenten WHERE classificatie = 'publiek' AND status = 'definitief_opgeslagen' ORDER BY aangemaakt_op DESC")
+      .all() as Documentrij[];
+  }
+
   /** Documenten die op menselijk nazicht wachten, oudste eerst. */
   inNazicht(): Documentrij[] {
     return this.db

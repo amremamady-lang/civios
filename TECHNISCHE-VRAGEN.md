@@ -71,6 +71,7 @@ mensen:
 | `GET /api/documenten/:id`, `…/bestand` | Beslissing en bestand terugvinden | volgens het beleid per classificatie |
 | `GET /api/auditlog`, `…/integriteit` | Spoor raadplegen; ketting nakijken | dossierbeheerder (eigen documenten: ook medewerker) |
 | `GET /api/nazicht`, `POST /api/documenten/:id/nazicht` | Wachtrij en beslissing | dossierbeheerder |
+| `GET /api/publiek` | Wat definitief publiek is | iedereen, ook zonder aanmelding |
 | `GET /api/beleid` | De geldende regels, transparant | iedereen |
 
 De volledige contracten (velden, voorbeeldantwoorden, statuscodes per fout)
