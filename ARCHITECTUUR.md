@@ -467,7 +467,7 @@ databank en bestandsopslag gedeeld worden (PostgreSQL, objectopslag).
 - **Foutscenario's eerst.** Elke regel uit §6 heeft een test.
 - **Handmatig:** negen voorbeelddocumenten met verwachte uitkomst (README).
 
-126 tests, `npm test`. De tekst- en naamherkenning worden getest met echte
+127 tests, `npm test`. De tekst- en naamherkenning worden getest met echte
 scans en teksten én met een nagebootst model dat faalt of onbetrouwbaar is,
 zodat het veilige gedrag bij uitval bewezen is. Elk testbestand gebruikt een
 eigen databank in het geheugen en een eigen opslagmap, zodat testen nooit de
