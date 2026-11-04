@@ -122,7 +122,7 @@ schrijft, schrijft in één transactie: faalt de registratie, dan verdwijnt ook
 het bestand weer. En bij elke storing in de classificatie, de tekstherkenning
 of de naamherkenning gaat de deur dicht: een voorzichtige categorie en
 nazicht, nooit publiek. Alle scenario's staan in de tabel in ARCHITECTUUR.md
-§6, en elk heeft een test.
+§6, en de belangrijkste hebben een test.
 
 **Testaanpak.** 127 geautomatiseerde tests (`npm test`) in drie lagen:
 eenheidstests per onderdeel (detectoren met controlegetallen, beleid,
@@ -189,10 +189,12 @@ npm run model
 ```
 
 Dit haalt het model voor naamherkenning (ca. 180 MB) één keer op en zet het in
-`modellen/`. Daarna is er geen internet meer nodig. `npm run dev` en `npm test`
-voeren dit automatisch uit; staat het model er al, dan doet het niets. Zonder
-model blijft alles werken, maar gaat elk document zonder andere signalen naar
-nazicht (zie *Bewuste beperkingen*).
+`modellen/`. Daarna is er geen internet meer nodig. `npm run dev` voert dit
+automatisch uit; staat het model er al, dan doet het niets, en lukt de download
+niet, dan start de server toch, met een waarschuwing. Zonder model blijft alles
+werken, maar gaat elk document zonder andere signalen naar nazicht (zie
+*Bewuste beperkingen*). `npm test` downloadt niets: de tien tests die het
+echte model nodig hebben, slaan zichzelf over zolang het ontbreekt.
 
 ## Starten
 
@@ -383,7 +385,7 @@ Antwoord **201**:
   "classificatie": "persoonsgegevens",
   "zekerheid": "zeker",
   "motivering": "Op basis van 1 signaal/signalen (emailadres) is …",
-  "signalen": [{ "type": "emailadres", "impliceert": "persoonsgegevens", "bewijs": "ja****…be", "aantal": 1 }],
+  "signalen": [{ "type": "emailadres", "impliceert": "persoonsgegevens", "bewijs": "ja********************be", "aantal": 1 }],
   "status": "definitief_opgeslagen",
   "opslagmap": "persoonsgegevens",
   "toegang": ["medewerker", "dossierbeheerder"],
@@ -480,7 +482,7 @@ kan valideren of er een client uit kan genereren.
 
 ### `GET /api/context.jsonld`: de betekenis van de velden
 
-Publiek. Een **JSON-LD-context** die elk veld van een document koppelt aan een
+Publiek. Een **JSON-LD-context** die de velden van een document koppelt aan een
 term uit een open vocabularium (Dublin Core, DCAT, PROV): `titel` is
 `dct:title`, `classificatie` is `dct:accessRights`, `sha256` is
 `spdx:checksum`. Het antwoord van `GET /api/documenten/:id` verwijst ernaar
@@ -519,7 +521,9 @@ Kort overzicht; de motivering staat in ARCHITECTUUR.md.
 **Aannames**
 - Documenten komen binnen via een medewerker, niet rechtstreeks van een burger.
 - Bewaartermijnen en rollen zijn fictief en configureerbaar; in een echt bestuur
-  komen ze uit de selectielijst en het identiteitsbeheer.
+  komen ze uit de selectielijst en het identiteitsbeheer. De fictieve termijnen
+  (10, 7, 5 en 3 jaar) volgen dataminimalisatie: hoe gevoeliger, hoe korter;
+  publieke informatie heeft archiefwaarde en blijft het langst.
 - De classificatie volgt de tabel uit de opdracht, ook waar die strenger is dan
   de AVG (financiële gegevens tellen als gevoelig).
 

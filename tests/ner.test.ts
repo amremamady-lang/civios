@@ -7,13 +7,18 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { existsSync } from 'node:fs';
 import {
   voegSamen,
   entiteitenNaarSignalen,
   zoekMetNer,
   zoekMetNerVeilig,
   herkenEntiteiten,
+  MODELBESTAND,
 } from '../src/classificatie/ner.js';
+
+/** De tests met het echte model slaan zichzelf over zolang `npm run model` niet gedraaid is. */
+const metModel = describe.skipIf(!existsSync(MODELBESTAND));
 
 describe('stukjes samenvoegen', () => {
   it('voegt stukjes van één naam samen tot één entiteit', () => {
@@ -80,7 +85,7 @@ describe('veilig gedrag', () => {
   });
 });
 
-describe('het echte taalmodel (lokaal)', () => {
+metModel('het echte taalmodel (lokaal)', () => {
   it('herkent een naam zonder aanspreking', async () => {
     const signalen = await zoekMetNer('Jan Peeters belde gisteren over zijn dossier.');
     expect(signalen.map((s) => s.type)).toContain('naam');

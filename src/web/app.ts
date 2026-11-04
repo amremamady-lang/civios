@@ -28,7 +28,8 @@ import { Documentenregister, type Documentrij } from '../opslag/documenten.js';
 import { maakVoorstel, verwerkDocument, type Aanbieding } from '../verwerking/verwerkDocument.js';
 import { handelNazichtAf } from '../verwerking/nazicht.js';
 import { Auditlog } from '../audit/auditlog.js';
-import { BELEID, BELEIDSVERSIE } from '../beleid/beleid.js';
+import { BELEID, BELEIDSVERSIE, beleidVoor } from '../beleid/beleid.js';
+import { CLASSIFICATIES } from '../domein/types.js';
 import {
   bepaalIdentiteit,
   beoordeelToegang,
@@ -270,7 +271,8 @@ export function maakApp(db: Db, instellingen: Instellingen): express.Express {
    * definitief als publiek is ingeschaald komt hier; wat in nazicht staat niet.
    */
   app.get('/api/publiek', (_req, res) => {
-    res.json(documenten.publiek().map(naarBuiten));
+    const publiek = CLASSIFICATIES.filter((c) => beleidVoor(c).publiekToegankelijk);
+    res.json(documenten.definitiefMet(publiek).map(naarBuiten));
   });
 
   app.get('/api/documenten/:id', (req, res) => {

@@ -17,7 +17,7 @@
  *   dan gaat het bestand terug naar zijn oorspronkelijke map.
  */
 
-import { existsSync, mkdirSync, renameSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, renameSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { CLASSIFICATIES, type Classificatie } from '../domein/types.js';
 import { beleidVoor, vervaldatum, BELEIDSVERSIE, type Rol } from '../beleid/beleid.js';
@@ -118,7 +118,10 @@ export function handelNazichtAf(
   const doelmap = join(opslagwortel, regel.opslagmap);
   const nieuwPad = join(doelmap, basename(oudPad));
   if (nieuwPad !== oudPad) {
-    if (!existsSync(doelmap)) mkdirSync(doelmap, { recursive: true });
+    if (!existsSync(doelmap)) {
+      mkdirSync(doelmap, { recursive: true });
+      chmodSync(doelmap, 0o700); // dezelfde afscherming als bij de eerste opslag
+    }
     renameSync(oudPad, nieuwPad);
   }
 

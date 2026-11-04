@@ -6,6 +6,10 @@ import { maakVoorstel, verwerkDocument } from '../src/verwerking/verwerkDocument
 import { Auditlog } from '../src/audit/auditlog.js';
 import { veiligeBestandsnaam } from '../src/opslag/bestandsopslag.js';
 import { stopOcr } from '../src/classificatie/ocr.js';
+import { MODELBESTAND } from '../src/classificatie/ner.js';
+
+/** Tests die het echte taalmodel nodig hebben, slaan zichzelf over zolang `npm run model` niet gedraaid is. */
+const metModel = it.skipIf(!existsSync(MODELBESTAND));
 import type { Documentmetadata } from '../src/domein/types.js';
 
 // Een eigen opslagmap, zodat de tests nooit de documenten van de draaiende app wissen.
@@ -44,7 +48,7 @@ afterAll(async () => {
 });
 
 describe('verwerking van een aangeboden document', () => {
-  it('slaat een publiek document op in de publieke map', async () => {
+  metModel('slaat een publiek document op in de publieke map', async () => {
     const r = await bied('Brochure over de openingsuren van het gemeentehuis.');
     expect(r.uitkomst).toBe('opgeslagen');
     if (r.uitkomst !== 'opgeslagen') return;
@@ -113,7 +117,7 @@ describe('verwerking van een aangeboden document', () => {
     expect(new Auditlog(db).recent()).toHaveLength(0);
   });
 
-  it('laat geen bestand en geen auditspoor achter als registreren mislukt', async () => {
+  metModel('laat geen bestand en geen auditspoor achter als registreren mislukt', async () => {
     await bied('Nota over de werking van de dienst burgerzaken, zonder bijzonderheden.');
     const map = join(OPSLAG, 'publiek');
     const bestandenVoor = readdirSync(map).length;
@@ -140,7 +144,7 @@ describe('verwerking van een aangeboden document', () => {
     expect(r.fout.boodschap).toContain('.txt');
   });
 
-  it('legt elke stap vast in het auditlog', async () => {
+  metModel('legt elke stap vast in het auditlog', async () => {
     const r = await bied('Nota over de werking van de dienst burgerzaken, zonder bijzonderheden.');
     if (r.uitkomst !== 'opgeslagen') throw new Error('verwacht opgeslagen');
     const spoor = new Auditlog(db).voorDocument(r.documentId) as { handeling: string }[];

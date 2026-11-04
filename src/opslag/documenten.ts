@@ -54,11 +54,17 @@ export class Documentenregister {
       | undefined;
   }
 
-  /** Definitief publieke documenten, nieuwste eerst: wat een burger mag zien. */
-  publiek(): Documentrij[] {
+  /**
+   * Definitief opgeslagen documenten met een van de gegeven classificaties,
+   * nieuwste eerst. Welke classificaties publiek zijn, bepaalt het beleid;
+   * het register weet dat niet zelf.
+   */
+  definitiefMet(classificaties: Classificatie[]): Documentrij[] {
+    if (classificaties.length === 0) return [];
+    const vraagtekens = classificaties.map(() => '?').join(', ');
     return this.db
-      .prepare("SELECT * FROM documenten WHERE classificatie = 'publiek' AND status = 'definitief_opgeslagen' ORDER BY aangemaakt_op DESC")
-      .all() as Documentrij[];
+      .prepare(`SELECT * FROM documenten WHERE classificatie IN (${vraagtekens}) AND status = 'definitief_opgeslagen' ORDER BY aangemaakt_op DESC`)
+      .all(...classificaties) as Documentrij[];
   }
 
   /** Documenten die op menselijk nazicht wachten, oudste eerst. */

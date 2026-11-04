@@ -4,7 +4,7 @@
  * Een woordenlijst of patroon kan geen namen herkennen: "Jan Peeters belde"
  * bevat geen aanwijzing behalve de naam zelf. Een NER-model is getraind op
  * duizenden zinnen en duidt per woord aan of het een persoon (PER), plaats
- * (LOC), organisatie (ORG) of datum (DATE) is.
+ * (LOC) of organisatie (ORG) is.
  *
  * Taakverdeling, zoals gangbaar bij privacytools:
  * - gestructureerde gegevens (e-mail, rijksregisternummer, IBAN) blijven
@@ -29,6 +29,8 @@ import { isEigenAdres } from './signalen.js';
 
 export const NER_MODEL = 'Xenova/bert-base-multilingual-cased-ner-hrl';
 export const MODELMAP = join(dirname(fileURLToPath(import.meta.url)), '../../modellen');
+/** Het bestand waaraan te zien is of het model lokaal aanwezig is. */
+export const MODELBESTAND = join(MODELMAP, NER_MODEL, 'onnx/model_quantized.onnx');
 
 /** Onder deze score (0-1) wordt een herkenning niet meegeteld. */
 export const MINIMALE_NER_SCORE = 0.8;
@@ -38,7 +40,7 @@ env.allowLocalModels = true;
 env.allowRemoteModels = false;
 
 export interface Entiteit {
-  soort: 'PER' | 'LOC' | 'ORG' | 'DATE';
+  soort: 'PER' | 'LOC' | 'ORG';
   tekst: string;
   score: number;
 }
@@ -131,7 +133,7 @@ export async function warmOpNer(): Promise<boolean> {
   }
 }
 
-/** Herkent personen, plaatsen, organisaties en datums in een tekst. */
+/** Herkent personen, plaatsen en organisaties in een tekst. */
 export async function herkenEntiteiten(tekst: string): Promise<Entiteit[]> {
   const ner = await laadModel();
   const alles: Entiteit[] = [];

@@ -10,7 +10,7 @@
     "dev": "npm run model && tsx src/web/server.ts",
     "start": "npm run model && tsx src/web/server.ts",
     "model": "tsx scripts/model-downloaden.ts",
-    "test": "npm run model && vitest run",
+    "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },

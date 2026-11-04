@@ -55,7 +55,7 @@ naar het auditlog. Stap voor stap: ARCHITECTUUR §3; de code:
 
 ## 3. Welke API's of integratiepunten zijn nodig, en hoe zien hun contracten eruit?
 
-Eén JSON-API over HTTP, tien endpoints. Elk antwoord heeft dezelfde vorm; elke
+Eén JSON-API over HTTP, veertien endpoints. Elk antwoord heeft dezelfde vorm; elke
 fout heeft een vaste code voor programma's en een zin in gewone taal voor
 mensen:
 

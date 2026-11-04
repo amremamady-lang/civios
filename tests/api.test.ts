@@ -14,6 +14,11 @@ import type { AddressInfo } from 'node:net';
 import { maakDatabase } from '../src/opslag/database.js';
 import { maakApp } from '../src/web/app.js';
 import { stopOcr } from '../src/classificatie/ocr.js';
+import { MODELBESTAND } from '../src/classificatie/ner.js';
+import { existsSync } from 'node:fs';
+
+/** Tests die het echte taalmodel nodig hebben, slaan zichzelf over zolang `npm run model` niet gedraaid is. */
+const metModel = it.skipIf(!existsSync(MODELBESTAND));
 
 // Een eigen opslagmap, zodat deze tests niet botsen met de andere testbestanden.
 const OPSLAG = './opslag-test-api';
@@ -267,7 +272,7 @@ describe('POST /api/documenten', () => {
     expect((await antwoord.json()).fout).toBe('geen_rechten');
   });
 
-  it('aanvaardt een document van een medewerker met 201 en een classificatie', async () => {
+  metModel('aanvaardt een document van een medewerker met 201 en een classificatie', async () => {
     const antwoord = await stuur('medewerker', 'Een gewone brochure over de openingsuren.');
     expect(antwoord.status).toBe(201);
     const data = await antwoord.json();
@@ -337,7 +342,7 @@ describe('GET /api/auditlog', () => {
     expect(regels.some((r) => r.handeling === 'aanmelding_mislukt')).toBe(true);
   });
 
-  it('laat een medewerker de beslissing over zijn eigen document terugvinden', async () => {
+  metModel('laat een medewerker de beslissing over zijn eigen document terugvinden', async () => {
     const aangeboden = await stuur('medewerker', 'Vragen aan jan.peeters@voorbeeld.be richten.');
     const { documentId } = await aangeboden.json();
 
@@ -352,7 +357,7 @@ describe('GET /api/auditlog', () => {
     expect(spoor[0].classificatie).toBe('persoonsgegevens');
   });
 
-  it('weigert een medewerker het spoor van andermans document, en legt die poging vast', async () => {
+  metModel('weigert een medewerker het spoor van andermans document, en legt die poging vast', async () => {
     // Aangeboden door de dossierbeheerder, dus niet door j.peeters.
     const aangeboden = await stuur('dossierbeheerder', 'Een gewone brochure over de openingsuren.');
     const { documentId } = await aangeboden.json();
@@ -374,7 +379,7 @@ describe('GET /api/auditlog', () => {
 });
 
 describe('GET /api/publiek (zonder aanmelding)', () => {
-  it('toont een burger enkel wat definitief publiek is, en laat dat bestand ook lezen', async () => {
+  metModel('toont een burger enkel wat definitief publiek is, en laat dat bestand ook lezen', async () => {
     const publiek = await (await stuur('medewerker', 'Openingsuren van de bibliotheek tijdens de zomer.')).json();
     const intern = await (await stuur('medewerker', 'Interne nota over de herinrichting.', 'nota.txt', 'text/plain', 'intern')).json();
     expect(publiek.classificatie).toBe('publiek');

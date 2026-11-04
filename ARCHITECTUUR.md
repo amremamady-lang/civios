@@ -183,7 +183,7 @@ medewerker, zonder het model om te gooien.
 
 **Wat betekenen de velden?** Een sleutel als `titel` zegt een ander systeem
 niets. Daarom publiceert de API een **JSON-LD-context** (`/api/context.jsonld`)
-die elk veld van een document koppelt aan een term uit een open vocabularium
+die de velden van een document koppelt aan een term uit een open vocabularium
 dat de publieke sector al gebruikt: Dublin Core (`dct:title`, `dct:created`,
 `dct:accessRights` voor de classificatie, `dct:conformsTo` voor de
 beleidsversie), DCAT (`dcat:byteSize`), SPDX (`spdx:checksum`) en PROV-O
@@ -382,7 +382,7 @@ tellen. Zoals de opdracht vraagt bij het gebruik van AI:
 |---|---|
 | **Afhankelijkheden** | `@huggingface/transformers` (open source) met het model lokaal in `modellen/` (ca. 180 MB, eenmalig opgehaald met `npm run model`). Tijdens het classificeren is internet uitgeschakeld (`allowRemoteModels = false`) |
 | **Privacyrisico's** | Geen: de tekst wordt op de eigen server verwerkt en verlaat het bestuur nooit. Van een herkende naam gaat enkel een gemaskeerde vorm (`J*********s`) naar het auditlog |
-| **Kosten** | Geen licentie of kost per document; ca. 180 MB schijf. Gemeten: het serverproces gebruikt ca. 510 MB geheugen met beide modellen geladen (ca. 240 MB daarvan voor het NER-model), laden duurt ca. 0,5 s, één herkenning enkele tientallen ms. De server laadt de modellen bij het opstarten op de achtergrond |
+| **Kosten** | Geen licentie of kost per document; ca. 180 MB schijf. Gemeten: het serverproces gebruikt ca. 510 MB geheugen met beide modellen geladen (ca. 240 MB daarvan voor het NER-model), laden duurt enkele seconden bij het opstarten, één herkenning daarna enkele tientallen ms. De server laadt de modellen bij het opstarten op de achtergrond |
 | **Fallback** | Faalt het model of ontbreekt het, dan loopt de verwerking door: zonder andere signalen wordt het document *intern* met nazicht, met signalen krijgt het de gevonden classificatie maar *onzeker*. Het adrespatroon werkt ook zonder model. Nooit wordt een document publiek omdat het model niets zag |
 
 Bewuste grenzen: het model kan een ongewone of buitenlandse naam missen, of een
@@ -464,7 +464,7 @@ databank en bestandsopslag gedeeld worden (PostgreSQL, objectopslag).
   verhuizing van het bestand, alle weigeringen incl. vier ogen), opruiming na
   de bewaartermijn (auditspoor blijft), en de hash-ketting: een gewijzigde of
   gewiste regel wordt aangewezen, ook nadat de triggers verwijderd zijn.
-- **Foutscenario's eerst.** Elke regel uit §6 heeft een test.
+- **Foutscenario's eerst.** Bijna elke regel uit §6 heeft een test; de uitzonderingen zijn de OCR-tijdslimiet, een te groot bestand (413) en een onleesbaar bestand op schijf (500), die handmatig zijn nagespeeld.
 - **Handmatig:** negen voorbeelddocumenten met verwachte uitkomst (README).
 
 127 tests, `npm test`. De tekst- en naamherkenning worden getest met echte

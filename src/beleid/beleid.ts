@@ -30,8 +30,11 @@ export interface Beleidsregel {
 
 /**
  * De bewaartermijnen hieronder zijn fictieve, configureerbare waarden voor
- * dit prototype. In een echt bestuur komen ze uit het selectiedocument en de
- * archiefwetgeving, niet uit de applicatie.
+ * dit prototype: 10, 7, 5 en 3 jaar. De lijn erin is dataminimalisatie:
+ * hoe gevoeliger het document, hoe korter het bewaard wordt; publieke
+ * informatie heeft archiefwaarde en blijft het langst. In een echt bestuur
+ * komen de termijnen uit de selectielijst en de archiefwetgeving, niet uit
+ * de applicatie.
  */
 export const BELEID: Record<Classificatie, Beleidsregel> = {
   publiek: {

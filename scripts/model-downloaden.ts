@@ -22,18 +22,31 @@ const BESTANDEN = [
   'onnx/model_quantized.onnx',
 ];
 
-for (const bestand of BESTANDEN) {
-  const doel = join(MODELMAP, NER_MODEL, bestand);
-  if (existsSync(doel) && statSync(doel).size > 0) {
-    console.log(`al aanwezig: ${bestand}`);
-    continue;
+/**
+ * Mislukt de download (geen internet, site onbereikbaar), dan is dat geen
+ * reden om te stoppen: de applicatie werkt ook zonder model, maar stuurt dan
+ * elk document zonder andere signalen naar nazicht. Daarom een waarschuwing
+ * en een normale afsluitcode, zodat `npm run dev` gewoon doorgaat.
+ */
+try {
+  for (const bestand of BESTANDEN) {
+    const doel = join(MODELMAP, NER_MODEL, bestand);
+    if (existsSync(doel) && statSync(doel).size > 0) {
+      console.log(`al aanwezig: ${bestand}`);
+      continue;
+    }
+    const url = `https://huggingface.co/${NER_MODEL}/resolve/main/${bestand}`;
+    console.log(`downloaden: ${bestand}`);
+    const antwoord = await fetch(url);
+    if (!antwoord.ok) throw new Error(`${url} antwoordde ${antwoord.status}`);
+    mkdirSync(dirname(doel), { recursive: true });
+    writeFileSync(doel, Buffer.from(await antwoord.arrayBuffer()));
   }
-  const url = `https://huggingface.co/${NER_MODEL}/resolve/main/${bestand}`;
-  console.log(`downloaden: ${bestand}`);
-  const antwoord = await fetch(url);
-  if (!antwoord.ok) throw new Error(`Downloaden van ${url} mislukt: ${antwoord.status}`);
-  mkdirSync(dirname(doel), { recursive: true });
-  writeFileSync(doel, Buffer.from(await antwoord.arrayBuffer()));
+  console.log(`Klaar. Het model staat in ${join(MODELMAP, NER_MODEL)}.`);
+} catch (fout) {
+  console.warn(
+    `Waarschuwing: het taalmodel kon niet opgehaald worden (${fout instanceof Error ? fout.message : String(fout)}). ` +
+      'De applicatie werkt zonder model, maar documenten zonder andere signalen gaan dan naar nazicht. ' +
+      'Probeer later opnieuw met: npm run model',
+  );
 }
-
-console.log(`Klaar. Het model staat in ${join(MODELMAP, NER_MODEL)}.`);
