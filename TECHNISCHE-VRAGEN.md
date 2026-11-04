@@ -178,7 +178,6 @@ die daarvoor bedoeld zijn. (ARCHITECTUUR §9)
 | Koppeling met een echte identiteitsprovider | Buiten de opdracht. De testaanmelding geeft tokens uit op dezelfde manier; enkel de uitgever verandert |
 | PDF-tekstextractie | Vraagt een extra bibliotheek; tot dan worden PDF's aanvaard en veilig in nazicht gezet |
 | Een Nederlandstalig gespecialiseerd naammodel | Het gebruikte model is meertalig en algemeen; een model getraind op overheidsteksten vraagt trainingsdata van het bestuur |
-| Het bestand bekijken in het nazichtscherm | Het bestand is op te halen via de API; inbedden in het scherm is een vervolgstap |
 | Blokkering en ingetrokken tokens over meerdere servers | Leven in het geheugen van dit ene proces; met meerdere servers hoort dat bij de identiteitsprovider |
 | Versleuteling op schijf, virusscan | Horen bij de infrastructuur van het bestuur |
 | Doorsturen van het auditlog naar een SIEM | De hash-ketting maakt manipulatie aantoonbaar, niet onmogelijk; een kopie buiten de databank is de volgende stap |

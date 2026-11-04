@@ -4,160 +4,141 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Documentclassificatie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --rand: #d6d3d0; --tekst: #1c1a19; --zacht: #5f5b57; --vlak: #faf9f8;
-    --publiek: #2f6b4f; --intern: #7a6322; --persoon: #8a4a1e; --gevoelig: #8c2f2f;
+    --groen: #1b4d4a; --groen-donker: #16403d; --groen-licht: #edf2ee; --groen-rand: rgba(27, 77, 74, .2);
+    --tekst: #2e3330; --zacht: #4a544f; --rand: #e5ebe7; --vlak: #fafaf9; --wit: #fff;
+    --geel: #ffde59; --geel-licht: #fff3c2;
+    --publiek: #1b4d4a; --intern: #5c7f6a; --persoon: #b7791f; --gevoelig: #8c2f2f; --fout: #8c2f2f;
+    --radius: 10px;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body {
-    margin: 0; padding: 32px 16px; background: var(--vlak); color: var(--tekst);
-    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0; padding: 0 16px 48px; background: var(--vlak); color: var(--tekst);
+    font: 15px/1.6 Manrope, ui-sans-serif, system-ui, "Segoe UI", sans-serif;
   }
-  main { max-width: 820px; margin: 0 auto; }
-  h1 { font-size: 1.5rem; margin: 0 0 4px; }
-  .onder { color: var(--zacht); margin: 0 0 28px; font-size: .95rem; }
-  fieldset { border: 1px solid var(--rand); border-radius: 8px; padding: 20px; margin: 0 0 20px; background: #fff; }
-  legend { padding: 0 8px; font-weight: 600; font-size: .9rem; text-transform: uppercase; letter-spacing: .06em; }
-  label { display: block; margin: 14px 0 4px; font-size: .9rem; font-weight: 600; }
-  input, select, button {
-    font: inherit; padding: 9px 11px; border: 1px solid var(--rand);
-    border-radius: 6px; background: #fff; color: inherit; width: 100%;
-  }
-  button {
-    background: var(--tekst); color: #fff; border-color: var(--tekst);
-    cursor: pointer; font-weight: 600; margin-top: 18px;
-  }
-  button:hover { opacity: .9; }
+  main { max-width: 760px; margin: 0 auto; }
+  h1, h2 { font-family: Sora, ui-sans-serif, system-ui, "Segoe UI", sans-serif; color: var(--groen); letter-spacing: -.01em; }
+  h1 { font-size: 1.45rem; margin: 0; }
+  h2 { font-size: 1rem; margin: 0 0 12px; }
+
+  /* Kop: titel links, aanmelding rechts */
+  header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 22px 0 18px; border-bottom: 1px solid var(--rand); margin-bottom: 24px; }
+  header p { margin: 2px 0 0; color: var(--zacht); font-size: .9rem; }
+  #aanmeldformulier { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  #aanmeldformulier input { width: 150px; }
+  #aangemeld { display: flex; gap: 12px; align-items: center; font-size: .92rem; }
+  #aangemeld strong { color: var(--groen); }
+
+  section { background: var(--wit); border: 1px solid var(--rand); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 18px; }
+  .toelichting { color: var(--zacht); font-size: .9rem; margin: 0 0 14px; }
+  label { display: block; margin: 12px 0 5px; font-size: .86rem; font-weight: 600; }
+  input, select { font: inherit; padding: 9px 12px; border: 1px solid var(--rand); border-radius: var(--radius); background: var(--wit); color: inherit; width: 100%; }
+  input:focus, select:focus { outline: 2px solid var(--groen-rand); border-color: var(--groen); }
+  button { font: inherit; font-weight: 600; padding: 9px 16px; border: 1px solid var(--groen); border-radius: var(--radius); background: var(--groen); color: var(--wit); cursor: pointer; }
+  button:hover { background: var(--groen-donker); }
+  button.licht { background: var(--wit); color: var(--groen); }
+  button.licht:hover { background: var(--groen-licht); }
+  button.klein { padding: 6px 12px; font-size: .86rem; }
   .rij { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 560px) { .rij { grid-template-columns: 1fr; } }
-  #uitkomst:empty { display: none; }
-  .kaart { border: 1px solid var(--rand); border-left-width: 5px; border-radius: 8px; padding: 18px; background: #fff; }
+  .acties { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  @media (max-width: 560px) { .rij { grid-template-columns: 1fr; } #aanmeldformulier input { width: 100%; } }
+
+  /* Resultaat en nazichtkaarten */
+  .kaart { border: 1px solid var(--rand); border-left: 4px solid var(--groen); border-radius: var(--radius); padding: 18px 20px; background: var(--wit); margin-top: 16px; }
   .kaart.publiek { border-left-color: var(--publiek); }
   .kaart.intern { border-left-color: var(--intern); }
   .kaart.persoonsgegevens { border-left-color: var(--persoon); }
   .kaart.gevoelige_persoonsgegevens { border-left-color: var(--gevoelig); }
-  .kaart.fout { border-left-color: var(--gevoelig); background: #fdf6f6; }
-  .etiket { font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: var(--zacht); }
-  .groot { font-size: 1.25rem; font-weight: 700; margin: 2px 0 10px; }
-  dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 14px 0 0; font-size: .92rem; }
+  .kaart.fout { border-left-color: var(--fout); }
+  .etiket { font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; color: var(--zacht); margin: 0 0 4px; }
+  .groot { font-family: Sora, ui-sans-serif, system-ui, sans-serif; font-size: 1.2rem; font-weight: 700; margin: 0 0 8px; color: var(--tekst); }
+  .kaart p { margin: 0 0 8px; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; margin: 12px 0 0; font-size: .9rem; }
   dt { color: var(--zacht); }
-  dd { margin: 0; }
-  ul.signalen { margin: 12px 0 0; padding-left: 18px; font-size: .92rem; }
-  .waarschuwing { margin-top: 14px; padding: 10px 12px; border-radius: 6px; background: #fdf6f6; border: 1px solid #e8d4d4; font-size: .92rem; }
-  #terugvinden { margin-top: 20px; }
+  dd { margin: 0; word-break: break-all; }
+  ul.signalen { margin: 8px 0; padding-left: 18px; font-size: .9rem; }
+  .pil { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--geel-licht); border: 1px solid var(--geel); font-size: .8rem; font-weight: 600; }
+  .waarschuwing { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--geel-licht); font-size: .9rem; }
+  .melding { color: var(--fout); font-size: .88rem; margin: 8px 0 0; }
+  .melding:empty { display: none; }
+  #uitkomst:empty, #spoor:empty, #nazichtlijst:empty { display: none; }
+
+  /* Bestandsweergave in het nazicht */
+  .weergave { margin-top: 12px; border: 1px solid var(--rand); border-radius: var(--radius); background: var(--vlak); padding: 12px; max-height: 420px; overflow: auto; }
+  .weergave img { max-width: 100%; display: block; border-radius: 6px; }
+  .weergave pre { margin: 0; white-space: pre-wrap; font: .86rem/1.5 ui-monospace, Consolas, monospace; }
+  .weergave object { width: 100%; height: 400px; border: 0; }
+
+  /* Auditspoor */
   .zoekrij { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
-  .zoekrij button { margin-top: 0; width: auto; padding-inline: 18px; }
+  .zoekrij button { white-space: nowrap; }
   @media (max-width: 560px) { .zoekrij { grid-template-columns: 1fr; } }
-  .toelichting { color: var(--zacht); font-size: .9rem; margin: 4px 0 0; }
-  #spoor:empty { display: none; }
-  #spoor { margin-top: 16px; }
-  .tabelvak { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .tabelvak { overflow-x: auto; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: .86rem; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rand); vertical-align: top; }
   th { color: var(--zacht); font-weight: 600; white-space: nowrap; }
   td.tijd { white-space: nowrap; }
-  .geweigerd { color: var(--gevoelig); font-weight: 600; }
-  .aanmeldrij { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
-  .aanmeldrij button { margin-top: 0; width: auto; padding-inline: 18px; }
-  @media (max-width: 560px) { .aanmeldrij { grid-template-columns: 1fr; } }
-  .aangemeld { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
-  .aangemeld p { margin: 0; }
-  .aangemeld button { margin-top: 0; width: auto; padding-inline: 18px; background: #fff; color: var(--tekst); }
-  .melding { margin: 10px 0 0; font-size: .9rem; color: var(--gevoelig); }
-  .melding:empty { display: none; }
+  .geweigerd { color: var(--fout); font-weight: 600; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Documentclassificatie en veilige opslag</h1>
-  <p class="onder">Prototype. Gebruik uitsluitend fictieve gegevens.</p>
-
-  <fieldset id="aanmelding">
-    <legend>Aanmelding</legend>
-    <form id="aanmeldformulier">
-      <p class="toelichting">
-        Niet aangemeld ben je een burger: je kan geen documenten aanbieden.
-        Gebruik een fictief testaccount uit de README.
-      </p>
-      <div class="aanmeldrij">
-        <div>
-          <label for="gebruikersnaam">Gebruikersnaam</label>
-          <input id="gebruikersnaam" autocomplete="username" required>
-        </div>
-        <div>
-          <label for="wachtwoord">Wachtwoord</label>
-          <input id="wachtwoord" type="password" autocomplete="current-password" required>
-        </div>
+  <header>
+    <div>
+      <h1>Documentclassificatie en veilige opslag</h1>
+      <p>Prototype. Enkel fictieve gegevens.</p>
+    </div>
+    <div>
+      <form id="aanmeldformulier">
+        <input id="gebruikersnaam" placeholder="Gebruikersnaam" autocomplete="username" required>
+        <input id="wachtwoord" type="password" placeholder="Wachtwoord" autocomplete="current-password" required>
         <button type="submit">Aanmelden</button>
+      </form>
+      <div id="aangemeld" hidden>
+        <span><strong id="wieNaam"></strong> · <span id="wieRol"></span></span>
+        <button type="button" id="afmelden" class="licht klein">Afmelden</button>
       </div>
       <p class="melding" id="aanmeldmelding"></p>
-    </form>
-    <div class="aangemeld" id="aangemeld" hidden>
-      <p>Aangemeld als <strong id="wieNaam"></strong> (<span id="wieRol"></span>)</p>
-      <button type="button" id="afmelden">Afmelden</button>
     </div>
-  </fieldset>
+  </header>
 
-  <form id="formulier">
-    <fieldset>
-      <legend>Document</legend>
-      <label for="bestand">Bestand of scan (.txt, .md, .pdf, .jpg, .png — max 10 MB)</label>
-      <input id="bestand" name="bestand" type="file" required
-             accept=".txt,.md,.pdf,.jpg,.jpeg,.png">
-
+  <section>
+    <h2>Document aanbieden</h2>
+    <p class="toelichting">Je ziet eerst het voorgestelde resultaat. Er wordt pas iets opgeslagen als je bevestigt. Niet aangemeld ben je een burger en kan je geen documenten aanbieden.</p>
+    <form id="formulier">
+      <label for="bestand">Bestand of scan (.txt, .md, .pdf, .jpg, .png, max. 10 MB)</label>
+      <input id="bestand" type="file" required accept=".txt,.md,.pdf,.jpg,.jpeg,.png">
       <div class="rij">
-        <div>
-          <label for="titel">Titel</label>
-          <input id="titel" name="titel" placeholder="Bijvoorbeeld: nota archiefwerking">
-        </div>
-        <div>
-          <label for="bron">Bron</label>
-          <input id="bron" name="bron" value="loket">
-        </div>
+        <div><label for="titel">Titel</label><input id="titel" placeholder="Bijvoorbeeld: nota archiefwerking"></div>
+        <div><label for="bron">Bron</label><input id="bron" value="loket"></div>
       </div>
-
       <label for="zichtbaarheid">Beoogde zichtbaarheid</label>
-      <select id="zichtbaarheid" name="beoogdeZichtbaarheid">
-        <option value="intern">intern</option>
-        <option value="publiek">publiek</option>
-      </select>
+      <select id="zichtbaarheid"><option value="intern">intern</option><option value="publiek">publiek</option></select>
+      <div class="acties"><button type="submit">Classificeren</button></div>
+    </form>
+    <div id="uitkomst"></div>
+  </section>
 
-      <button type="submit">Classificeren</button>
-      <p class="toelichting">Je ziet eerst het voorgestelde resultaat. Er wordt pas iets opgeslagen als je bevestigt.</p>
-    </fieldset>
-  </form>
-
-  <div id="uitkomst"></div>
-
-  <fieldset id="nazicht" hidden>
-    <legend>Nazicht</legend>
-    <p class="toelichting">
-      Documenten die het systeem niet zeker wist, staan veilig opgeslagen en wachten op een
-      beslissing van een dossierbeheerder. Wie een document zelf aanbood, mag het niet zelf
-      afhandelen (vier ogen). Elke beslissing komt met motivering in het auditlog.
-    </p>
-    <button type="button" id="toonNazicht">Toon documenten in nazicht</button>
+  <section id="nazicht" hidden>
+    <h2>Nazicht</h2>
+    <p class="toelichting">Documenten die het systeem niet zeker wist, staan veilig opgeslagen en wachten op een beslissing. Bekijk het bestand, kies een classificatie en motiveer. Wie een document zelf aanbood, mag het niet zelf afhandelen.</p>
+    <button type="button" id="toonNazicht" class="licht">Toon documenten in nazicht</button>
     <div id="nazichtlijst"></div>
-  </fieldset>
+  </section>
 
-  <fieldset id="terugvinden">
-    <legend>Beslissing terugvinden</legend>
-    <p class="toelichting">
-      Toont het auditspoor van een document. Een medewerker ziet enkel het spoor van documenten
-      die hij zelf aanbood; een dossierbeheerder ziet alles. Ook elke inzage wordt zelf in het
-      auditlog vastgelegd.
-    </p>
+  <section>
+    <h2>Beslissing terugvinden</h2>
+    <p class="toelichting">Het auditspoor van een document. Een medewerker ziet enkel het spoor van documenten die hij zelf aanbood; een dossierbeheerder ziet alles. Ook elke inzage wordt vastgelegd.</p>
     <form id="zoekformulier" class="zoekrij">
-      <div>
-        <label for="documentId">Document-id</label>
-        <input id="documentId" placeholder="Wordt ingevuld na het opladen" required>
-      </div>
-      <button type="submit">Bekijk auditspoor</button>
+      <div><label for="documentId">Document-id</label><input id="documentId" placeholder="Wordt ingevuld na het opslaan" required></div>
+      <button type="submit" class="licht">Bekijk auditspoor</button>
     </form>
     <div id="spoor"></div>
-  </fieldset>
+  </section>
 </main>
 
 <script>
@@ -308,15 +289,15 @@ async function slaVoorstelOp() {
 /** Toont een voorstel (nog niets opgeslagen) of het opgeslagen resultaat. */
 function toonResultaat(d, opgeslagen) {
   const signalen = (d.signalen || [])
-    .map((s) => '<li>' + ontsnap(s.type) + ' — ' + ontsnap(String(s.bewijs)) + ' (' + s.aantal + 'x)</li>')
+    .map((s) => '<li>' + ontsnap(s.type) + ': ' + ontsnap(String(s.bewijs)) + ' (' + s.aantal + 'x)</li>')
     .join('');
   const nazicht = d.status !== 'in_nazicht' ? '' : opgeslagen
     ? '<p class="waarschuwing">De classificatie was onzeker. Het document is veilig opgeslagen onder een voorzichtige categorie en wacht op nazicht door een dossierbeheerder.</p>'
-    : '<p class="waarschuwing">De classificatie is onzeker, bijvoorbeeld omdat een scan niet betrouwbaar gelezen kon worden. Het document wordt daarom voorzichtig opgeslagen en gaat naar nazicht.</p>';
+    : '<p class="waarschuwing">De classificatie is onzeker, bijvoorbeeld omdat een scan niet betrouwbaar gelezen kon worden. Het document wordt voorzichtig opgeslagen en gaat naar nazicht.</p>';
 
   uitkomst.innerHTML =
     '<div class="kaart ' + ontsnap(d.classificatie) + '">' +
-      '<p class="etiket">' + (opgeslagen ? 'Opgeslagen' : 'Voorgestelde classificatie — nog niet opgeslagen') + '</p>' +
+      '<p class="etiket">' + (opgeslagen ? 'Opgeslagen' : 'Voorgestelde classificatie, nog niet opgeslagen') + '</p>' +
       '<p class="groot">' + (LEESBAAR[d.classificatie] || ontsnap(d.classificatie)) + '</p>' +
       '<p>' + ontsnap(d.motivering) + '</p>' +
       (signalen ? '<ul class="signalen">' + signalen + '</ul>' : '') +
@@ -329,9 +310,45 @@ function toonResultaat(d, opgeslagen) {
         '<dt>Beleidsversie</dt><dd>' + ontsnap(d.beleidsversie) + '</dd>' +
         (opgeslagen ? '<dt>Document-id</dt><dd>' + ontsnap(d.documentId) + '</dd>' : '') +
       '</dl>' +
-      (opgeslagen ? '' : '<button type="button" id="opslaan">Opslaan volgens deze classificatie</button>') +
+      (opgeslagen ? '' : '<div class="acties"><button type="button" id="opslaan">Opslaan volgens deze classificatie</button></div>') +
     '</div>';
   if (!opgeslagen) $('opslaan').addEventListener('click', slaVoorstelOp);
+}
+
+/* ---------------------------------------------------------------- */
+/* Bestand bekijken (tekst, afbeelding of PDF), met het token         */
+/* ---------------------------------------------------------------- */
+
+/**
+ * Een gewone link kan het token niet meesturen. Daarom wordt het bestand
+ * opgehaald via de API en als tijdelijk object in de pagina getoond. Het
+ * opvragen zelf wordt door de server in het auditlog vastgelegd.
+ */
+async function bekijkBestand(documentId, vak) {
+  vak.innerHTML = '<p class="toelichting">Bestand ophalen…</p>';
+  let antwoord;
+  try {
+    antwoord = await fetch('/api/documenten/' + encodeURIComponent(documentId) + '/bestand', {
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+    });
+  } catch (fout) {
+    return (vak.innerHTML = '<p class="melding">De server is niet bereikbaar.</p>');
+  }
+  if (!antwoord.ok) {
+    const data = await antwoord.json().catch(() => ({}));
+    if (antwoord.status === 401) afmelden(data.boodschap);
+    return (vak.innerHTML = '<p class="melding">' + ontsnap(data.boodschap || 'Het bestand kon niet opgehaald worden.') + '</p>');
+  }
+  const type = antwoord.headers.get('content-type') || '';
+  const blob = await antwoord.blob();
+  if (type.startsWith('text/')) {
+    vak.innerHTML = '<pre>' + ontsnap(await blob.text()) + '</pre>';
+  } else {
+    const url = URL.createObjectURL(blob);
+    vak.innerHTML = type.startsWith('image/')
+      ? '<img src="' + url + '" alt="Het aangeboden document">'
+      : '<object data="' + url + '" type="' + ontsnap(type) + '">Deze browser toont dit bestand niet in de pagina.</object>';
+  }
 }
 
 /* ---------------------------------------------------------------- */
@@ -352,14 +369,16 @@ async function laadNazicht() {
       '<p class="etiket">In nazicht sinds ' + ontsnap(new Date(d.aangemaakt_op).toLocaleString('nl-BE')) + '</p>' +
       '<p class="groot">' + ontsnap(d.titel) + '</p>' +
       '<dl><dt>Bron</dt><dd>' + ontsnap(d.bron) + '</dd>' +
-        '<dt>Voorlopig</dt><dd>' + (LEESBAAR[d.classificatie] || ontsnap(d.classificatie)) + '</dd>' +
+        '<dt>Voorlopig</dt><dd><span class="pil">' + (LEESBAAR[d.classificatie] || ontsnap(d.classificatie)) + '</span></dd>' +
+        '<dt>Bestand</dt><dd>' + ontsnap(d.bestandsnaam) + ' <button type="button" class="licht klein nz-bekijk">Bekijk bestand</button></dd>' +
         '<dt>Document-id</dt><dd>' + ontsnap(d.id) + '</dd></dl>' +
+      '<div class="weergave nz-weergave" hidden></div>' +
       '<label>Classificatie na nazicht</label><select class="nz-classificatie">' + opties + '</select>' +
       '<label>Motivering (verplicht)</label>' +
       '<input class="nz-motivering" placeholder="Bijvoorbeeld: scan nagekeken, bevat geen persoonsgegevens">' +
-      '<div class="rij">' +
+      '<div class="acties">' +
         '<button type="button" class="nz-bevestig">Bevestig huidige classificatie</button>' +
-        '<button type="button" class="nz-herclassificeer">Sla op met gekozen classificatie</button>' +
+        '<button type="button" class="licht nz-herclassificeer">Sla op met gekozen classificatie</button>' +
       '</div><p class="melding nz-melding"></p></div>';
   }).join('');
 }
@@ -368,6 +387,13 @@ nazichtlijst.addEventListener('click', async (gebeurtenis) => {
   const knop = gebeurtenis.target.closest('button');
   if (!knop) return;
   const kaart = knop.closest('.nazichtkaart');
+
+  if (knop.classList.contains('nz-bekijk')) {
+    const vak = kaart.querySelector('.nz-weergave');
+    vak.hidden = false;
+    return bekijkBestand(kaart.dataset.id, vak);
+  }
+
   const melding = kaart.querySelector('.nz-melding');
   melding.textContent = '';
   const { ok, data } = await api('/api/documenten/' + encodeURIComponent(kaart.dataset.id) + '/nazicht', json({

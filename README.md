@@ -249,7 +249,8 @@ identiteitsprovider van het bestuur (zie ARCHITECTUUR.md, §7).
    `01-publieke-brochure.txt`: het adres van het gemeentehuis erin telt niet
    als persoonsgegeven.
 9. Meld aan als `m.claes` en klik *Toon documenten in nazicht*: de brochure
-   uit stap 7 staat erin. Kies *Publiek*, typ een motivering en sla op → het
+   uit stap 7 staat erin. Klik *Bekijk bestand* om de scan zelf te zien (die
+   inzage komt in het auditlog). Kies *Publiek*, typ een motivering en sla op → het
    document is definitief, verhuist naar de publieke map en het spoor toont
    de beslissing mét motivering. (Had `m.claes` de scan zelf aangeboden, dan
    was dit geweigerd: vier ogen.)
@@ -552,8 +553,6 @@ Kort overzicht; de motivering staat in ARCHITECTUUR.md.
 - Versleuteling van de opslag, virusscan bij het aanbieden.
 - Het auditlog doorsturen naar het logplatform van het bestuur (SIEM), zodat
   ook een databankbeheerder er niet meer aan kan.
-- Een inzagescherm voor de dossierbeheerder om het bestand zelf te bekijken
-  tijdens het nazicht (het bestand is nu op te halen via de API).
 
 ## Gebruik van AI-hulpmiddelen
 

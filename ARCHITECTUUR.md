@@ -481,7 +481,6 @@ gegevens van de draaiende applicatie raakt.
 | Blokkering en ingetrokken tokens over meerdere servers | Beide lijsten leven in het geheugen van één proces (§7). Met meerdere servers hoort dat bij de identiteitsprovider of een gedeelde opslag |
 | PDF-tekstextractie | PDF's (ook gescande) vragen een extra bibliotheek om de pagina's uit te lezen of om te zetten naar afbeeldingen; tot dan worden ze aanvaard en veilig in nazicht gezet |
 | Handschrift | Tesseract herkent vooral gedrukte tekst; handgeschreven documenten zullen meestal onder de betrouwbaarheidsdrempel vallen en in nazicht gaan |
-| Het bestand zelf bekijken in het nazichtscherm | De dossierbeheerder ziet titel, bron en voorlopige classificatie; het bestand is op te halen via de API, maar nog niet in het scherm ingebed |
 | Doorsturen van het auditlog naar een SIEM | De hash-ketting maakt manipulatie aantoonbaar, maar niet onmogelijk voor wie de databank volledig beheert; een kopie buiten de databank hoort bij het logplatform van het bestuur (§9) |
 | Een Nederlandstalig gespecialiseerd NER-model | Het gebruikte model is meertalig en algemeen. Een model dat specifiek op Nederlandse overheidsteksten getraind is, zou nauwkeuriger zijn; dat vraagt trainingsdata van het bestuur (§8) |
 | Versleuteling op schijf, virusscan | Hoort bij de infrastructuur van het bestuur; vermeld als vervolgstap |
